@@ -206,11 +206,8 @@ async def list_products(
     if category:
         query["category"] = category
     if search:
-        # Check if text index exists or fallback to regex
-        try:
-            query["$text"] = {"$search": search}
-        except:
-            query["name"] = {"$regex": search, "$options": "i"}
+        # Use $regex for broad compatibility; text index helps if available
+        query["name"] = {"$regex": search, "$options": "i"}
             
     sort_mapping = {
         "newest": [("created_at", -1)],

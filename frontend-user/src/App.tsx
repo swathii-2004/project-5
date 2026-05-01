@@ -1,22 +1,30 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
+import UserLayout from './components/layout/UserLayout'
 import LoginPage from './pages/auth/LoginPage'
 import SignupPage from './pages/auth/SignupPage'
+import UserDashboardPage from './pages/dashboard/UserDashboardPage'
+import SearchPage from './pages/search/SearchPage'
+import ProductDetailPage from './pages/search/ProductDetailPage'
+import WishlistPage from './pages/wishlist/WishlistPage'
 
 function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignupPage />} />
-      
+
       <Route element={<ProtectedRoute />}>
-        <Route path="/dashboard" element={<div>User Dashboard — Coming Soon</div>} />
-        <Route path="/search" element={<div>Search — Coming Soon</div>} />
-        <Route path="/map" element={<div>Map — Coming Soon</div>} />
-        <Route path="/reservations" element={<div>Reservations — Coming Soon</div>} />
-        <Route path="/chat" element={<div>Chat — Coming Soon</div>} />
-        <Route path="/wishlist" element={<div>Wishlist — Coming Soon</div>} />
-        <Route path="/emergency" element={<div>Emergency — Coming Soon</div>} />
+        <Route element={<UserLayout />}>
+          <Route path="/dashboard" element={<UserDashboardPage />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/products/:id" element={<ProductDetailPage />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
+          <Route path="/map" element={<div className="py-20 text-center text-gray-400">Map — Coming Soon</div>} />
+          <Route path="/reservations" element={<div className="py-20 text-center text-gray-400">Reservations — Coming Soon</div>} />
+          <Route path="/chat" element={<div className="py-20 text-center text-gray-400">Chat — Coming Soon</div>} />
+          <Route path="/emergency" element={<div className="py-20 text-center text-gray-400">Emergency — Coming Soon</div>} />
+        </Route>
       </Route>
 
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
