@@ -6,8 +6,11 @@ import SignupPage from './pages/auth/SignupPage'
 import UserDashboardPage from './pages/dashboard/UserDashboardPage'
 import SearchPage from './pages/search/SearchPage'
 import ProductDetailPage from './pages/search/ProductDetailPage'
+import StorePage from './pages/search/StorePage'
 import WishlistPage from './pages/wishlist/WishlistPage'
 import ReservationsPage from './pages/reservations/ReservationsPage'
+import MapPage from './pages/map/MapPage'
+import EmergencyPage from './pages/emergency/EmergencyPage'
 
 function App() {
   return (
@@ -20,11 +23,12 @@ function App() {
           <Route path="/dashboard" element={<UserDashboardPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/products/:id" element={<ProductDetailPage />} />
+          <Route path="/stores/:store_id" element={<StorePage />} />
           <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/reservations" element={<ReservationsPage />} />
-          <Route path="/map" element={<div className="py-20 text-center text-gray-400">Map — Coming Soon</div>} />
+          <Route path="/map" element={<MapPage />} />
+          <Route path="/emergency" element={<EmergencyPage />} />
           <Route path="/chat" element={<div className="py-20 text-center text-gray-400">Chat — Coming Soon</div>} />
-          <Route path="/emergency" element={<div className="py-20 text-center text-gray-400">Emergency — Coming Soon</div>} />
         </Route>
       </Route>
 
@@ -34,4 +38,5 @@ function App() {
 }
 
 export default App
+
 

@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, Query
 from typing import List, Optional, Literal
-from datetime import datetime
+from datetime import datetime, timedelta
 from bson import ObjectId
 import json
 from app.database import db
 from app.dependencies import get_current_user, require_role
 from app.models.product import ProductCreate, ProductUpdate, StockUpdateRequest, ProductResponse
 from app.services.upload_service import upload_to_cloudinary
+from app.utils.geo import haversine_distance
 
 router = APIRouter()
 
@@ -226,6 +227,199 @@ async def list_products(
         "page": page,
         "pages": (total + limit - 1) // limit
     }
+
+@router.get("/search")
+async def search_products(
+    q: Optional[str] = None,
+    lat: Optional[float] = None,
+    lng: Optional[float] = None,
+    radius_km: float = Query(5.0, ge=0),
+    sort: str = Query("distance", pattern="^(distance|price|rating)$"),
+    available_now: bool = False,
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100)
+):
+    query = {"is_active": True}
+    if q:
+        query["name"] = {"$regex": q, "$options": "i"}
+    
+    products_cursor = db.products.find(query)
+    all_products = await products_cursor.to_list(length=None)
+    
+    filtered = []
+    
+    for prod in all_products:
+        if available_now:
+            avail = prod["stock"] - prod.get("reserved_qty", 0)
+            if avail <= 0:
+                continue
+                
+        profile = await db.vendor_profiles.find_one({"user_id": prod["vendor_id"]})
+        
+        distance = None
+        store_name = "Unknown"
+        city = ""
+        
+        if profile:
+            store_name = profile.get("store_name", "Unknown")
+            city = profile.get("city", "")
+            if lat is not None and lng is not None and profile.get("location") and profile["location"].get("coordinates"):
+                store_lng = profile["location"]["coordinates"][0]
+                store_lat = profile["location"]["coordinates"][1]
+                distance = haversine_distance(lat, lng, store_lat, store_lng)
+        
+        if lat is not None and lng is not None and distance is not None and distance > radius_km:
+            continue
+            
+        prod_data = format_product_response(prod).model_dump()
+        prod_data["distance_km"] = distance
+        prod_data["store_name"] = store_name
+        prod_data["city"] = city
+        filtered.append(prod_data)
+        
+    if sort == "distance" and lat is not None and lng is not None:
+        filtered.sort(key=lambda x: (x["distance_km"] is None, x["distance_km"]))
+    elif sort == "price":
+        filtered.sort(key=lambda x: x["discounted_price"] if x.get("discounted_price") is not None else x["price"])
+    elif sort == "rating":
+        filtered.sort(key=lambda x: x["average_rating"], reverse=True)
+        
+    total = len(filtered)
+    start = (page - 1) * limit
+    end = start + limit
+    page_results = filtered[start:end]
+    
+    return {
+        "products": page_results,
+        "total": total,
+        "page": page,
+        "pages": (total + limit - 1) // limit if limit > 0 else 1
+    }
+
+@router.get("/emergency")
+async def emergency_search(
+    q: str = Query(..., min_length=2),
+    lat: float = Query(...),
+    lng: float = Query(...),
+    radius_km: float = Query(10.0, ge=0)
+):
+    actual_radius = min(radius_km, 25.0)
+    
+    query = {
+        "is_active": True,
+        "name": {"$regex": q, "$options": "i"}
+    }
+    
+    products_cursor = db.products.find(query)
+    all_products = await products_cursor.to_list(length=None)
+    
+    filtered = []
+    
+    for prod in all_products:
+        avail = prod["stock"] - prod.get("reserved_qty", 0)
+        if avail <= 0:
+            continue
+            
+        profile = await db.vendor_profiles.find_one({"user_id": prod["vendor_id"]})
+        if not profile or not profile.get("location") or not profile["location"].get("coordinates"):
+            continue
+            
+        store_lng = profile["location"]["coordinates"][0]
+        store_lat = profile["location"]["coordinates"][1]
+        distance = haversine_distance(lat, lng, store_lat, store_lng)
+        
+        if distance <= actual_radius:
+            prod_data = format_product_response(prod).model_dump()
+            prod_data["distance_km"] = distance
+            prod_data["store_name"] = profile.get("store_name", "Unknown")
+            prod_data["city"] = profile.get("city", "")
+            filtered.append(prod_data)
+            
+    filtered.sort(key=lambda x: x["distance_km"])
+    
+    return {
+        "products": filtered[:30],
+        "total": len(filtered),
+        "page": 1,
+        "pages": 1
+    }
+
+@router.get("/recommended")
+async def recommended_products(
+    lat: Optional[float] = None,
+    lng: Optional[float] = None,
+    current_user: dict = Depends(require_role(["user"]))
+):
+    past_reservations = await db.reservations.find(
+        {"user_id": ObjectId(current_user["_id"]), "status": "completed"}
+    ).sort("created_at", -1).limit(10).to_list(length=10)
+    
+    category_counts = {}
+    for r in past_reservations:
+        for item in r.get("items", []):
+            prod = await db.products.find_one({"_id": ObjectId(item["product_id"])})
+            if prod and prod.get("category"):
+                cat = prod["category"]
+                category_counts[cat] = category_counts.get(cat, 0) + 1
+                
+    top_categories = [c for c, _ in sorted(category_counts.items(), key=lambda x: x[1], reverse=True)]
+    
+    pipeline = [
+        {"$match": {"created_at": {"$gte": datetime.utcnow() - timedelta(days=30)}}},
+        {"$unwind": "$items"},
+        {"$group": {"_id": "$items.product_id", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}},
+        {"$limit": 10}
+    ]
+    trending = await db.reservations.aggregate(pipeline).to_list(length=10)
+    trending_ids = [t["_id"] for t in trending]
+    
+    results = []
+    seen_ids = set()
+    
+    async def add_product(prod):
+        if str(prod["_id"]) in seen_ids or not prod.get("is_active"):
+            return
+        
+        profile = await db.vendor_profiles.find_one({"user_id": prod["vendor_id"]})
+        distance = None
+        if profile and lat is not None and lng is not None and profile.get("location") and profile["location"].get("coordinates"):
+            store_lng = profile["location"]["coordinates"][0]
+            store_lat = profile["location"]["coordinates"][1]
+            distance = haversine_distance(lat, lng, store_lat, store_lng)
+            
+            if distance > 10.0:
+                return
+                
+        prod_data = format_product_response(prod).model_dump()
+        prod_data["distance_km"] = distance
+        prod_data["store_name"] = profile.get("store_name", "Unknown") if profile else "Unknown"
+        prod_data["city"] = profile.get("city", "") if profile else ""
+        
+        results.append(prod_data)
+        seen_ids.add(str(prod["_id"]))
+
+    if top_categories:
+        cat_products = await db.products.find({"category": {"$in": top_categories}, "is_active": True}).to_list(length=50)
+        for p in cat_products:
+            await add_product(p)
+            if len(results) >= 5:
+                break
+                
+    for tid in trending_ids:
+        p = await db.products.find_one({"_id": tid})
+        if p:
+            await add_product(p)
+            
+    if len(results) < 10:
+        extra = await db.products.find({"is_active": True}).sort("average_rating", -1).limit(20).to_list(length=20)
+        for p in extra:
+            await add_product(p)
+            if len(results) >= 10:
+                break
+                
+    return results[:10]
+
 
 @router.get("/{product_id}")
 async def get_product_detail(product_id: str):

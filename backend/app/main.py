@@ -7,6 +7,7 @@ from app.tasks.expire_reservations import expire_reservations
 from app.routers import auth, users, admin, vendors, products, wishlist, reviews
 from app.routers.reservations import router as reservations_router
 from app.routers.group_reservations import router as group_reservations_router
+from app.routers.stores import router as stores_router
 
 app = FastAPI(title="ProxiMart API", version="1.0.0")
 
@@ -55,6 +56,7 @@ app.include_router(wishlist.router, prefix="/api/v1/wishlist", tags=["wishlist"]
 app.include_router(reviews.router, prefix="/api/v1", tags=["reviews"])
 app.include_router(reservations_router, prefix="/api/v1")
 app.include_router(group_reservations_router, prefix="/api/v1")
+app.include_router(stores_router, prefix="/api/v1/stores", tags=["stores"])
 
 
 @app.get("/health")

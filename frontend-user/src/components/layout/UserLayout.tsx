@@ -1,12 +1,14 @@
-import { Outlet, useNavigate, NavLink } from 'react-router-dom'
+import { Outlet, useNavigate, NavLink, useSearchParams } from 'react-router-dom'
 import { useState, useRef, useEffect } from 'react'
-import { Heart, Bell, Home, Search, Map, ClipboardList } from 'lucide-react'
+import { Heart, Bell, Home, Search, Map, ClipboardList, AlertTriangle } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
+import OfflineBanner from '../shared/OfflineBanner'
 
 export default function UserLayout() {
   const navigate = useNavigate()
   const { user, logout } = useAuthStore()
-  const [searchVal, setSearchVal] = useState('')
+  const [searchParams] = useSearchParams()
+  const [searchVal, setSearchVal] = useState(searchParams.get('q') ?? '')
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -80,6 +82,7 @@ export default function UserLayout() {
       </header>
 
       {/* ── Page content ── */}
+      <OfflineBanner />
       <main className="flex-1 pt-16 pb-16 md:pb-0">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <Outlet />
@@ -93,7 +96,8 @@ export default function UserLayout() {
             { to: '/dashboard', Icon: Home, label: 'Home' },
             { to: '/search', Icon: Search, label: 'Search' },
             { to: '/map', Icon: Map, label: 'Map' },
-            { to: '/reservations', Icon: ClipboardList, label: 'Reservations' },
+            { to: '/reservations', Icon: ClipboardList, label: 'Orders' },
+            { to: '/emergency', Icon: AlertTriangle, label: 'Emergency' },
           ].map(({ to, Icon, label }) => (
             <NavLink
               key={to}

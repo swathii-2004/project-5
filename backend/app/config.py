@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     SENDGRID_FROM_EMAIL: str = ""
     GOOGLE_MAPS_API_KEY: str = ""
     FIREBASE_CREDENTIALS_JSON: str = ""
+    MAPBOX_API_KEY: str = ""
     FRONTEND_USER_URL: str = "http://localhost:5173"
     FRONTEND_VENDOR_URL: str = "http://localhost:5174"
     FRONTEND_ADMIN_URL: str = "http://localhost:5175"
