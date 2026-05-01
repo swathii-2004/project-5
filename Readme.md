@@ -59,7 +59,7 @@ Local shoppers often face stock uncertainty, wasted travel time, and no visibili
 
 - **Frontend:** React + TypeScript + Tailwind CSS
 - **Backend:** Node.js / FastAPI
-- **Database:** MongoDB / PostgreSQL
+- **Database:** MongoDB 
 - **Maps:** Google Maps API / Mapbox
 - **Auth:** JWT with role-based access
 - **Notifications:** Firebase Cloud Messaging
@@ -70,5 +70,7 @@ Local shoppers often face stock uncertainty, wasted travel time, and no visibili
 ## Impact
 
 ProxiMart transforms local shopping into a **fast, intelligent, and user-centric experience** — reducing wait times, eliminating stock uncertainty, and strengthening the local retail ecosystem through technology.
+
+
 
 > *Shop smart. Shop local. Shop now.*
