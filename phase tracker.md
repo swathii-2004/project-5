@@ -10,7 +10,7 @@
 
 | Phase | Title | Status | Duration |
 |---|---|---|---|
-| Phase 1 | Foundation & Auth | 🔲 Not started | 2 weeks |
+| Phase 1 | Foundation & Auth | 🔄 In progress | 2 weeks |
 | Phase 2 | Admin Panel & Vendor Approval System | 🔲 Not started | 1.5 weeks |
 | Phase 3 | Product Listings & Inventory Management | 🔲 Not started | 2 weeks |
 | Phase 4 | Reservation System | 🔲 Not started | 2 weeks |
@@ -36,7 +36,7 @@
 - [ ] Set up `app/config.py` with pydantic-settings reading from `.env`
 - [ ] Set up `app/database.py` — Motor async MongoDB connection
 - [ ] Set up `app/main.py` — FastAPI app init, CORS, router registration
-- [ ] Create `.env.example` with all required variable names (including `AES_SECRET_KEY`)
+- [x] Create `.env.example` with all required variable names (including `AES_SECRET_KEY`)
 
 #### AES-256 encryption utility
 - [ ] Create `utils/encryption.py` — AES-256-CBC encrypt/decrypt helpers
@@ -100,8 +100,8 @@
 ### Infrastructure
 - [ ] `docker-compose.yml` — MongoDB + backend containers for local dev
 - [ ] Backend `Dockerfile`
-- [ ] Root `.gitignore` covering Python, Node, env files, OS artifacts
-- [ ] Root `README.md` with setup instructions for local development
+- [x] Root `.gitignore` covering Python, Node, env files, OS artifacts
+- [ ] Root `README.md` with setup instructions for local development ⚠️ *File exists but local dev setup steps not yet written*
 - [ ] `develop` branch created from `main`
 
 ---
