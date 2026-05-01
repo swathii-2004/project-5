@@ -173,6 +173,32 @@
 > **Goal:** Vendors can manage product listings and stock. Users can browse and view products.  
 > **Milestone:** Vendor adds products. User can browse and view product detail with live stock info.
 
+### What Phase 3 builds
+
+Vendors can create and manage product listings with images. Users can browse, search, and view products with live stock info. Wishlist system added.
+
+### Build order
+
+1. **Backend first:**
+   - Vendor profile endpoints (`GET/PUT /vendors/me/profile`) with AES-256 re-encryption on update + Google Maps geocoding on address save
+   - Product CRUD (`POST`, `GET`, `PUT`, `DELETE /products`) with Cloudinary image upload
+   - Stock update endpoint (`PUT /products/:id/stock`)
+   - Public product search with text index (`GET /products?category=&search=&page=`)
+   - Public product detail (`GET /products/:id`) with `available_qty = stock - reserved_qty`
+   - Wishlist endpoints (`POST/DELETE/GET /wishlist`)
+   - Read-only reviews endpoints (`GET /reviews/product/:id`, `GET /reviews/store/:id`)
+   - 2dsphere index on `vendor_profiles.location` confirmed in `database.py`
+
+2. **Frontend — Vendor app:**
+   - Products page: table with image thumbnail, stock level, low-stock amber highlight
+   - Add/Edit product form: name, description, category, price, stock, threshold, multi-image upload (up to 5)
+   - Inventory page: stock level table with inline update per row, low-stock banner
+
+3. **Frontend — User app:**
+   - Browse/Search page: category filter tabs, debounced search, product cards with stock badge
+   - Product detail page: image gallery, price, available stock, Reserve button (placeholder for Phase 4), Add to Wishlist toggle
+   - Wishlist page
+
 ### Backend
 
 #### Vendor profile
