@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 from bson import ObjectId
 from app.database import db
-from app.dependencies import require_role
+from app.dependencies import get_current_user, require_role
 
 router = APIRouter(tags=["notifications"])
 

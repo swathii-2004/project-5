@@ -4,7 +4,7 @@ import math
 from fastapi import APIRouter, Depends, HTTPException, Query
 from bson import ObjectId
 from app.database import get_db
-from app.dependencies import require_role
+from app.dependencies import get_current_user, require_role
 from app.models.admin import RejectRequest
 from app.services.admin_service import log_admin_action
 from app.services.email_service import send_approval_email, send_rejection_email

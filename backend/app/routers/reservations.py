@@ -3,7 +3,7 @@ from typing import Optional
 from datetime import datetime
 from bson import ObjectId
 from app.database import db
-from app.dependencies import require_role
+from app.dependencies import get_current_user, require_role
 from app.models.reservation import (
     ReservationCreate, ReservationResponse,
     ConfirmReservationRequest, RejectReservationRequest

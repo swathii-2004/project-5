@@ -5,7 +5,7 @@ import logging
 from app.websocket.manager import manager
 from app.utils.jwt import decode_token
 from app.database import get_db
-from app.dependencies import require_role
+from app.dependencies import get_current_user, require_role
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["chat"])

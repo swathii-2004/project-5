@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from datetime import datetime
 from bson import ObjectId
 from app.database import db
-from app.dependencies import require_role
+from app.dependencies import get_current_user, require_role
 from app.models.group_reservation import GroupReservationCreate, GroupMemberPortion
 from app.config import settings
 try:

@@ -4,6 +4,7 @@ from typing import Optional
 from app.database import db
 from app.utils.geo import haversine_distance
 from app.models.vendor import VendorProfileResponse
+from app.dependencies import get_current_user, require_role
 
 router = APIRouter(tags=["stores"])
 

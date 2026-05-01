@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from bson import ObjectId
 from datetime import datetime
 from app.database import db
-from app.dependencies import require_role
+from app.dependencies import get_current_user, require_role
 from app.models.review import ReviewCreate
 
 router = APIRouter(tags=["reviews"])

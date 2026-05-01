@@ -2,7 +2,7 @@ import asyncio
 from datetime import datetime
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel, ConfigDict
-from app.dependencies import get_current_user
+from app.dependencies import get_current_user, require_role
 from app.models.user import UserResponse, UserUpdate
 from app.utils.encryption import decrypt, encrypt
 from app.database import get_db
