@@ -30,3 +30,8 @@ async def create_indexes():
     await db.admin_audit_log.create_index("admin_id")
     await db.admin_audit_log.create_index("action")
     await db.admin_audit_log.create_index("created_at")
+    
+    # Phase 3 indexes
+    await db.wishlists.create_index([("user_id", 1), ("product_id", 1)], unique=True)
+    await db.notifications.create_index([("user_id", 1), ("is_read", 1)])
+    await db.notifications.create_index("created_at")

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import create_indexes
-from app.routers import auth, users, admin
+from app.routers import auth, users, admin, vendors, products, wishlist, reviews
 
 app = FastAPI(title="ProxiMart API", version="1.0.0")
 
@@ -27,6 +27,10 @@ async def startup_event():
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(users.router, prefix="/api/v1")
 app.include_router(admin.router, prefix="/api/v1")
+app.include_router(vendors.router, prefix="/api/v1/vendors", tags=["vendors"])
+app.include_router(products.router, prefix="/api/v1/products", tags=["products"])
+app.include_router(wishlist.router, prefix="/api/v1/wishlist", tags=["wishlist"])
+app.include_router(reviews.router, prefix="/api/v1/reviews", tags=["reviews"])
 
 @app.get("/health")
 async def health_check():
