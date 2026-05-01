@@ -71,6 +71,6 @@ Local shoppers often face stock uncertainty, wasted travel time, and no visibili
 
 ProxiMart transforms local shopping into a **fast, intelligent, and user-centric experience** — reducing wait times, eliminating stock uncertainty, and strengthening the local retail ecosystem through technology.
 
-
+if possible please  try aes 256 encrption security
 
 > *Shop smart. Shop local. Shop now.*
