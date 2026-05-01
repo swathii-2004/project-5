@@ -26,3 +26,7 @@ async def create_indexes():
     await db.reservations.create_index("vendor_id")
     await db.reservations.create_index("status")
     await db.reservations.create_index("expires_at")
+    
+    await db.admin_audit_log.create_index("admin_id")
+    await db.admin_audit_log.create_index("action")
+    await db.admin_audit_log.create_index("created_at")

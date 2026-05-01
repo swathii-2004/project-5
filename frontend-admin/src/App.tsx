@@ -1,18 +1,20 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { ProtectedRoute } from "./components/ProtectedRoute";
-
-function DashboardPlaceholder() { return <div>Admin Dashboard - coming soon</div>; }
+import AdminLayout from "./components/layout/AdminLayout";
+import DashboardPage from "./pages/dashboard/DashboardPage";
+import PendingApprovalsPage from "./pages/approvals/PendingApprovalsPage";
+import UsersPage from "./pages/users/UsersPage";
+import AnalyticsPage from "./pages/analytics/AnalyticsPage";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<div>Admin Login</div>} />
-        <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<DashboardPlaceholder />} />
-          <Route path="/approvals" element={<div>Approvals</div>} />
-          <Route path="/users" element={<div>Users</div>} />
-          <Route path="/analytics" element={<div>Analytics</div>} />
+        <Route element={<AdminLayout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/approvals" element={<PendingApprovalsPage />} />
+          <Route path="/users" element={<UsersPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
         </Route>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
       </Routes>

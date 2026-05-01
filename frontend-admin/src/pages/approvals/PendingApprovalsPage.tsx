@@ -1,0 +1,1 @@
+export default function PendingApprovalsPage() { return <div>Approvals</div>; }
