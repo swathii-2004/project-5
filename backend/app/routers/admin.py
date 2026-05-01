@@ -1,5 +1,5 @@
-﻿import asyncio
-from datetime import datetime
+import asyncio
+from datetime import datetime, timedelta
 import math
 from fastapi import APIRouter, Depends, HTTPException, Query
 from bson import ObjectId
@@ -116,16 +116,51 @@ async def delete_user(user_id: str, admin: dict = Depends(require_role(["admin"]
 @router.get("/analytics/overview")
 async def get_analytics(db=Depends(get_db)):
     today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    seven_days_ago = datetime.utcnow() - timedelta(days=7)
     
+    async def get_total_revenue():
+        pipeline = [
+            {"$match": {"status": "completed"}},
+            {"$group": {"_id": None, "total": {"$sum": "$total_value"}}}
+        ]
+        res = await db.reservations.aggregate(pipeline).to_list(1)
+        return float(res[0]["total"]) if res else 0.0
+
+    async def get_recent_reservations():
+        docs = await db.reservations.find().sort("created_at", -1).limit(10).to_list(10)
+        recent = []
+        for doc in docs:
+            user = await db.users.find_one({"_id": doc["user_id"]})
+            vendor = await db.vendor_profiles.find_one({"user_id": doc["vendor_id"]})
+            recent.append({
+                "reservation_id": str(doc["_id"]),
+                "user_name": user["name"] if user else "Unknown",
+                "product_name": doc["items"][0]["name"] if doc.get("items") else "Unknown",
+                "store_name": vendor.get("store_name", "Unknown") if vendor else "Unknown",
+                "total_value": doc.get("total_value", 0.0),
+                "status": doc["status"],
+                "created_at": doc["created_at"]
+            })
+        return recent
+
     coros = [
         db.users.count_documents({"role": "user"}),
         db.users.count_documents({"role": "vendor", "status": "active"}),
         db.users.count_documents({"role": "vendor", "status": "pending"}),
         db.products.count_documents({"is_active": True}),
-        db.reservations.count_documents({"created_at": {"$gte": today}})
+        db.reservations.count_documents({"created_at": {"$gte": today}}),
+        get_total_revenue(),
+        db.reservations.count_documents({"created_at": {"$gte": seven_days_ago}}),
+        get_recent_reservations(),
+        db.reservations.count_documents({"status": "completed"}),
+        db.reservations.count_documents({"status": {"$in": ["confirmed", "completed"]}})
     ]
     
     results = await asyncio.gather(*coros)
+    
+    completed_res = results[8]
+    confirmed_res = results[9]
+    platform_completion_rate = round(completed_res / confirmed_res * 100, 1) if confirmed_res > 0 else 0.0
     
     return {
         "total_users": results[0],
@@ -133,5 +168,8 @@ async def get_analytics(db=Depends(get_db)):
         "total_vendors_pending": results[2],
         "total_products": results[3],
         "total_reservations_today": results[4],
-        "platform_completion_rate": 0
+        "total_revenue": results[5],
+        "weekly_reservations": results[6],
+        "recent_reservations": results[7],
+        "platform_completion_rate": platform_completion_rate
     }

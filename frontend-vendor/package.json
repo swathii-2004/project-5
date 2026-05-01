@@ -23,6 +23,7 @@
     "lucide-react": "^1.14.0",
     "react-hook-form": "^7.74.0",
     "react-router-dom": "^7.14.2",
+    "recharts": "^3.8.1",
     "zod": "^4.4.1",
     "zustand": "^5.0.12"
   }
