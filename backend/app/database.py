@@ -47,3 +47,7 @@ async def create_indexes():
         [("reviewer_id", 1), ("target_id", 1), ("target_type", 1)],
         unique=True
     )
+
+    # Phase 6 indexes
+    await db.chat_messages.create_index([("room_id", 1), ("created_at", 1)])
+    await db.chat_messages.create_index("is_read")

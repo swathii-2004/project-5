@@ -1,15 +1,19 @@
 import { Outlet, useNavigate, NavLink, useSearchParams } from 'react-router-dom'
-import { useState, useRef, useEffect } from 'react'
-import { Heart, Bell, Home, Search, Map, ClipboardList, AlertTriangle } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { Heart, Home, Search, Map, ClipboardList, AlertTriangle, MessageSquare } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
 import OfflineBanner from '../shared/OfflineBanner'
+import NotificationBell from '../shared/NotificationBell'
+import { useFirebaseMessaging } from '../../hooks/useFirebaseMessaging'
 
 export default function UserLayout() {
   const navigate = useNavigate()
-  const { user, logout } = useAuthStore()
+  const { user } = useAuthStore()
   const [searchParams] = useSearchParams()
   const [searchVal, setSearchVal] = useState(searchParams.get('q') ?? '')
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useFirebaseMessaging()
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchVal.trim()) {
@@ -57,18 +61,20 @@ export default function UserLayout() {
           {/* Right actions */}
           <div className="flex items-center gap-3 shrink-0">
             <button
+              onClick={() => navigate('/chat')}
+              className="p-2 rounded-full hover:bg-gray-100 text-gray-600 transition"
+              aria-label="Chat"
+            >
+              <MessageSquare className="h-5 w-5" />
+            </button>
+            <button
               onClick={() => navigate('/wishlist')}
               className="p-2 rounded-full hover:bg-gray-100 text-gray-600 transition"
               aria-label="Wishlist"
             >
               <Heart className="h-5 w-5" />
             </button>
-            <button
-              className="p-2 rounded-full hover:bg-gray-100 text-gray-600 transition"
-              aria-label="Notifications"
-            >
-              <Bell className="h-5 w-5" />
-            </button>
+            <NotificationBell />
             <div className="hidden md:flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold">
                 {user?.name?.[0]?.toUpperCase() ?? 'U'}

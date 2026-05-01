@@ -3,6 +3,7 @@ from bson import ObjectId
 from fastapi import HTTPException
 from app.utils.encryption import encrypt
 from app.models.reservation import ReservationCreate
+from app.services.notification_service import notify_user
 
 
 async def release_stock(reservation_id: str, db) -> None:
@@ -64,15 +65,15 @@ async def create_reservation(data: ReservationCreate, user_id: str, db) -> dict:
         {"$inc": {"reserved_qty": data.quantity}}
     )
 
-    await db.notifications.insert_one({
-        "user_id": product["vendor_id"],
-        "title": "New Reservation",
-        "message": f"New reservation for {product['name']}",
-        "type": "reservation",
-        "is_read": False,
-        "action_url": "/reservations",
-        "created_at": now
-    })
+    await notify_user(
+        str(product["vendor_id"]),
+        "New Reservation",
+        f"New reservation for {product['name']}",
+        "reservation",
+        "/reservations",
+        db,
+        {"reservation_id": str(result.inserted_id)}
+    )
 
     reservation_doc["_id"] = result.inserted_id
     return reservation_doc
@@ -99,15 +100,14 @@ async def confirm_reservation(reservation_id: str, vendor_id, note, db) -> dict:
 
     await db.reservations.update_one({"_id": ObjectId(reservation_id)}, {"$set": update})
 
-    await db.notifications.insert_one({
-        "user_id": reservation["user_id"],
-        "title": "Reservation Confirmed!",
-        "message": "Your reservation has been confirmed. Pick up within 2 hours.",
-        "type": "reservation",
-        "is_read": False,
-        "action_url": "/reservations",
-        "created_at": now
-    })
+    await notify_user(
+        str(reservation["user_id"]),
+        "Reservation Confirmed!",
+        "Your reservation has been confirmed. Pick up within 2 hours.",
+        "reservation",
+        "/reservations",
+        db
+    )
 
     return await db.reservations.find_one({"_id": ObjectId(reservation_id)})
 
@@ -128,15 +128,14 @@ async def reject_reservation(reservation_id: str, vendor_id, reason: str, db) ->
     )
     await release_stock(reservation_id, db)
 
-    await db.notifications.insert_one({
-        "user_id": reservation["user_id"],
-        "title": "Reservation Rejected",
-        "message": f"Your reservation was rejected. Reason: {reason}",
-        "type": "reservation",
-        "is_read": False,
-        "action_url": "/reservations",
-        "created_at": now
-    })
+    await notify_user(
+        str(reservation["user_id"]),
+        "Reservation Rejected",
+        f"Your reservation was rejected. Reason: {reason}",
+        "reservation",
+        "/reservations",
+        db
+    )
 
     return await db.reservations.find_one({"_id": ObjectId(reservation_id)})
 
@@ -162,15 +161,14 @@ async def complete_reservation(reservation_id: str, vendor_id, db) -> dict:
         {"$set": {"status": "completed", "completed_at": now, "updated_at": now}}
     )
 
-    await db.notifications.insert_one({
-        "user_id": reservation["user_id"],
-        "title": "Pickup Confirmed!",
-        "message": "Your pickup is complete. Please leave a review!",
-        "type": "reservation",
-        "is_read": False,
-        "action_url": "/reservations",
-        "created_at": now
-    })
+    await notify_user(
+        str(reservation["user_id"]),
+        "Pickup Confirmed!",
+        "Your pickup is complete. Please leave a review!",
+        "reservation",
+        "/reservations",
+        db
+    )
 
     return await db.reservations.find_one({"_id": ObjectId(reservation_id)})
 

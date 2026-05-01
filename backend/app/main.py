@@ -8,6 +8,9 @@ from app.routers import auth, users, admin, vendors, products, wishlist, reviews
 from app.routers.reservations import router as reservations_router
 from app.routers.group_reservations import router as group_reservations_router
 from app.routers.stores import router as stores_router
+from app.routers.notifications import router as notifications_router
+from app.routers.chat import router as chat_router
+from app.services.notification_service import init_firebase
 
 app = FastAPI(title="ProxiMart API", version="1.0.0")
 
@@ -28,6 +31,7 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
+    init_firebase()
     if settings.AES_SECRET_KEY:
         assert len(settings.AES_SECRET_KEY.encode("utf-8")) == 32, \
             "AES_SECRET_KEY must be exactly 32 bytes"
@@ -57,6 +61,8 @@ app.include_router(reviews.router, prefix="/api/v1", tags=["reviews"])
 app.include_router(reservations_router, prefix="/api/v1")
 app.include_router(group_reservations_router, prefix="/api/v1")
 app.include_router(stores_router, prefix="/api/v1/stores", tags=["stores"])
+app.include_router(notifications_router, prefix="/api/v1/notifications")
+app.include_router(chat_router, prefix="/api/v1")
 
 
 @app.get("/health")

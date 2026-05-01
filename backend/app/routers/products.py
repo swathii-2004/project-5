@@ -8,6 +8,7 @@ from app.dependencies import get_current_user, require_role
 from app.models.product import ProductCreate, ProductUpdate, StockUpdateRequest, ProductResponse
 from app.services.upload_service import upload_to_cloudinary
 from app.utils.geo import haversine_distance
+from app.services.notification_service import notify_user
 
 router = APIRouter()
 
@@ -161,19 +162,15 @@ async def update_product_stock(
         wishlist_cursor = db.wishlists.find({"product_id": ObjectId(product_id), "notify_on_restock": True})
         wishlists = await wishlist_cursor.to_list(length=None)
         
-        notifications = []
         for wl in wishlists:
-            notifications.append({
-                "user_id": wl["user_id"],
-                "title": "Back in stock!",
-                "message": f"{product['name']} is now available at a nearby store.",
-                "type": "stock",
-                "is_read": False,
-                "action_url": f"/products/{product_id}",
-                "created_at": now
-            })
-        if notifications:
-            await db.notifications.insert_many(notifications)
+            await notify_user(
+                str(wl["user_id"]),
+                "Back in stock!",
+                f"{product['name']} is now available at a nearby store.",
+                "stock",
+                f"/products/{product_id}",
+                db
+            )
             
     updated_product = await db.products.find_one({"_id": ObjectId(product_id)})
     return format_product_response(updated_product)

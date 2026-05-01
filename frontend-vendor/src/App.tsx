@@ -8,6 +8,7 @@ import ProductsPage from './pages/products/ProductsPage'
 import InventoryPage from './pages/inventory/InventoryPage'
 import VendorReservationsPage from './pages/reservations/VendorReservationsPage'
 import VendorLayout from './components/layout/VendorLayout'
+import ChatPage from './pages/chat/ChatPage'
 
 function App() {
   return (
@@ -22,7 +23,7 @@ function App() {
           <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/reservations" element={<VendorReservationsPage />} />
           <Route path="/analytics" element={<div>Analytics — Coming Soon</div>} />
-          <Route path="/chat" element={<div>Chat — Coming Soon</div>} />
+          <Route path="/chat" element={<ChatPage />} />
         </Route>
       </Route>
 

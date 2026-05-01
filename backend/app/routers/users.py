@@ -1,11 +1,16 @@
 from datetime import datetime
 from fastapi import APIRouter, Depends
+from pydantic import BaseModel, ConfigDict
 from app.dependencies import get_current_user
 from app.models.user import UserResponse, UserUpdate
 from app.utils.encryption import decrypt, encrypt
 from app.database import get_db
 
 router = APIRouter(prefix="/users", tags=["Users"])
+
+class FCMTokenUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    fcm_token: str
 
 @router.get("/me", response_model=UserResponse)
 async def get_me(current_user: dict = Depends(get_current_user), db=Depends(get_db)):

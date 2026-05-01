@@ -11,6 +11,8 @@ import WishlistPage from './pages/wishlist/WishlistPage'
 import ReservationsPage from './pages/reservations/ReservationsPage'
 import MapPage from './pages/map/MapPage'
 import EmergencyPage from './pages/emergency/EmergencyPage'
+import ChatPage from './pages/chat/ChatPage'
+import NotificationsPage from './pages/notifications/NotificationsPage'
 
 function App() {
   return (
@@ -28,7 +30,8 @@ function App() {
           <Route path="/reservations" element={<ReservationsPage />} />
           <Route path="/map" element={<MapPage />} />
           <Route path="/emergency" element={<EmergencyPage />} />
-          <Route path="/chat" element={<div className="py-20 text-center text-gray-400">Chat — Coming Soon</div>} />
+          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
         </Route>
       </Route>
 
