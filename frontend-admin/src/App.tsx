@@ -1,23 +1,22 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import AdminLayout from "./components/layout/AdminLayout";
-import DashboardPage from "./pages/dashboard/DashboardPage";
-import PendingApprovalsPage from "./pages/approvals/PendingApprovalsPage";
-import UsersPage from "./pages/users/UsersPage";
-import AnalyticsPage from "./pages/analytics/AnalyticsPage";
+import { Routes, Route, Navigate } from 'react-router-dom'
+import ProtectedRoute from './components/ProtectedRoute'
+import LoginPage from './pages/auth/LoginPage'
 
-export default function App() {
+function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<div>Admin Login</div>} />
-        <Route element={<AdminLayout />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/approvals" element={<PendingApprovalsPage />} />
-          <Route path="/users" element={<UsersPage />} />
-          <Route path="/analytics" element={<AnalyticsPage />} />
-        </Route>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </BrowserRouter>
-  );
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      
+      <Route element={<ProtectedRoute />}>
+        <Route path="/dashboard" element={<div>Admin Dashboard — Coming Soon</div>} />
+        <Route path="/approvals" element={<div>Approvals — Coming Soon</div>} />
+        <Route path="/users" element={<div>Users — Coming Soon</div>} />
+        <Route path="/analytics" element={<div>Analytics — Coming Soon</div>} />
+      </Route>
+
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
+  )
 }
+
+export default App

@@ -1,24 +1,33 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+import { Routes, Route, Navigate } from 'react-router-dom'
+import ProtectedRoute from './components/ProtectedRoute'
+import LoginPage from './pages/auth/LoginPage'
+import SignupPage from './pages/auth/SignupPage'
 
-function DashboardPlaceholder() { return <div>Vendor Dashboard - coming soon</div>; }
+import DashboardPage from './pages/dashboard/DashboardPage'
+import ProductsPage from './pages/products/ProductsPage'
+import InventoryPage from './pages/inventory/InventoryPage'
+import VendorLayout from './components/layout/VendorLayout'
 
-export default function App() {
+function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<div>Vendor Login</div>} />
-        <Route path="/signup" element={<div>Vendor Signup</div>} />
-        <Route element={<ProtectedRoute />}>
-          <Route path="/dashboard" element={<DashboardPlaceholder />} />
-          <Route path="/products" element={<div>Products</div>} />
-          <Route path="/reservations" element={<div>Reservations</div>} />
-          <Route path="/inventory" element={<div>Inventory</div>} />
-          <Route path="/analytics" element={<div>Analytics</div>} />
-          <Route path="/chat" element={<div>Chat</div>} />
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
+      
+      <Route element={<ProtectedRoute />}>
+        <Route element={<VendorLayout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/products" element={<ProductsPage />} />
+          <Route path="/inventory" element={<InventoryPage />} />
+          <Route path="/reservations" element={<div>Reservations — Coming Soon</div>} />
+          <Route path="/analytics" element={<div>Analytics — Coming Soon</div>} />
+          <Route path="/chat" element={<div>Chat — Coming Soon</div>} />
         </Route>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </BrowserRouter>
-  );
+      </Route>
+
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
+  )
 }
+
+export default App
