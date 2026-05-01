@@ -6,6 +6,7 @@ import SignupPage from './pages/auth/SignupPage'
 import DashboardPage from './pages/dashboard/DashboardPage'
 import ProductsPage from './pages/products/ProductsPage'
 import InventoryPage from './pages/inventory/InventoryPage'
+import VendorReservationsPage from './pages/reservations/VendorReservationsPage'
 import VendorLayout from './components/layout/VendorLayout'
 
 function App() {
@@ -19,7 +20,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/products" element={<ProductsPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
-          <Route path="/reservations" element={<div>Reservations — Coming Soon</div>} />
+          <Route path="/reservations" element={<VendorReservationsPage />} />
           <Route path="/analytics" element={<div>Analytics — Coming Soon</div>} />
           <Route path="/chat" element={<div>Chat — Coming Soon</div>} />
         </Route>
@@ -31,3 +32,4 @@ function App() {
 }
 
 export default App
+

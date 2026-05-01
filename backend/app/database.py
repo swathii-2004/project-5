@@ -35,3 +35,15 @@ async def create_indexes():
     await db.wishlists.create_index([("user_id", 1), ("product_id", 1)], unique=True)
     await db.notifications.create_index([("user_id", 1), ("is_read", 1)])
     await db.notifications.create_index("created_at")
+
+    # Phase 4 indexes
+    await db.reservations.create_index("user_id")
+    await db.reservations.create_index("vendor_id")
+    await db.reservations.create_index("status")
+    await db.reservations.create_index("expires_at")
+    await db.group_reservations.create_index("created_by")
+    await db.group_reservations.create_index("status")
+    await db.reviews.create_index(
+        [("reviewer_id", 1), ("target_id", 1), ("target_type", 1)],
+        unique=True
+    )
