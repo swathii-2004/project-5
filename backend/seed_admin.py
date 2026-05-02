@@ -37,6 +37,7 @@ async def main():
 
     await db.users.insert_one(admin_doc)
     print("Admin user created successfully.")
+    
 
 if __name__ == "__main__":
     asyncio.run(main())
