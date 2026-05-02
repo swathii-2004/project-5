@@ -640,5 +640,6 @@ Vendors can create and manage product listings with images. Users can browse, se
 - Firebase FCM tokens expire — implement `PUT /users/me/fcm-token` endpoint called on every app foreground event to keep tokens fresh.
 
 ---
-
+> ✅ Phases 1–7 completed as of May 1, 2026.  
+> 🔄 Phase 8 (Testing, Security & Deployment) currently in progress.
 *Keep this file updated as you build. Every completed checkbox is progress.*
