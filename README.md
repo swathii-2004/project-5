@@ -24,4 +24,5 @@
    Runs on http://localhost:5174
 8. Start frontend-admin (new terminal):
    cd frontend-admin && cp .env.example .env && npm install && npm run dev
+   
    Runs on http://localhost:5175
