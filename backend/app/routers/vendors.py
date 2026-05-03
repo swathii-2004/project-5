@@ -3,7 +3,7 @@ import asyncio
 from typing import List
 from datetime import datetime, timedelta
 from bson import ObjectId
-from app.database import db
+from app.database import db, get_db
 from app.dependencies import get_current_user, require_role
 from app.models.vendor import VendorProfileUpdate, VendorProfileResponse
 from app.utils.encryption import encrypt, decrypt
