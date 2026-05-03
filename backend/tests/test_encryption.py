@@ -30,3 +30,26 @@ def test_encrypt_format():
     text = "test"
     enc = encrypt(text)
     assert enc.count(":") == 1
+
+def test_decrypt_invalid_base64():
+    with pytest.raises(Exception):
+        decrypt("invalid_base64:invalid_base64")
+
+def test_decrypt_wrong_key():
+    from app.config import settings
+    original_key = settings.AES_SECRET_KEY
+    enc = encrypt("test secret")
+    
+    # Temporarily change key
+    settings.AES_SECRET_KEY = "0" * 32
+    try:
+        with pytest.raises(Exception):
+            decrypt(enc)
+    finally:
+        settings.AES_SECRET_KEY = original_key
+
+def test_decrypt_none():
+    assert decrypt(None) is None
+
+def test_decrypt_empty_string():
+    assert decrypt("") == ""

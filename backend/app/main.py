@@ -1,6 +1,9 @@
 import logging
-from fastapi import FastAPI
-
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import JSONResponse
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -20,7 +23,20 @@ from app.services.notification_service import init_firebase
 
 app = FastAPI(title="ProxiMart API", version="1.0.0")
 
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 scheduler = AsyncIOScheduler()
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    return response
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,17 +46,18 @@ app.add_middleware(
         settings.FRONTEND_ADMIN_URL
     ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
 )
 
 
 @app.on_event("startup")
 async def startup_event():
     init_firebase()
-    if settings.AES_SECRET_KEY:
-        assert len(settings.AES_SECRET_KEY.encode("utf-8")) == 32, \
-            "AES_SECRET_KEY must be exactly 32 bytes"
+    if not settings.AES_SECRET_KEY or len(settings.AES_SECRET_KEY.encode("utf-8")) != 32:
+        raise ValueError("AES_SECRET_KEY must be configured and exactly 32 bytes")
+    if not settings.JWT_SECRET:
+        raise ValueError("JWT_SECRET must be configured")
     await create_indexes()
     scheduler.add_job(
         expire_reservations,
@@ -73,4 +90,8 @@ app.include_router(chat_router, prefix="/api/v1")
 
 @app.get("/health")
 async def health_check():
-    return {"status": "ok", "version": "1.0.0"}
+    try:
+        await db.command("ping")
+        return {"status": "ok", "database": "connected", "version": "1.0.0"}
+    except Exception as e:
+        raise HTTPException(status_code=503, detail="Service Unavailable: Database connection failed")

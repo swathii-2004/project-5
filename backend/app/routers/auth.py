@@ -7,9 +7,14 @@ from app.models.user import UserSignupUser, UserSignupVendor, UserLogin, TokenRe
 from app.services.auth_service import signup_user, signup_vendor, login
 from app.utils.jwt import encode_token, decode_token
 
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
 router = APIRouter(prefix="/auth", tags=["Auth"])
+limiter = Limiter(key_func=get_remote_address)
 
 @router.post("/signup", status_code=201)
+@limiter.limit("5/minute")
 async def signup(
     role: str,
     request: Request,
@@ -72,7 +77,8 @@ async def signup(
     return json_resp
 
 @router.post("/login")
-async def login_route(data: UserLogin, db=Depends(get_db)):
+@limiter.limit("10/minute")
+async def login_route(request: Request, data: UserLogin, db=Depends(get_db)):
     user_doc = await login(data, db)
     
     access_token = encode_token(
@@ -108,6 +114,7 @@ async def login_route(data: UserLogin, db=Depends(get_db)):
     return json_resp
 
 @router.post("/refresh")
+@limiter.limit("20/minute")
 async def refresh(request: Request, db=Depends(get_db)):
     refresh_token = request.cookies.get("refresh_token")
     if not refresh_token:

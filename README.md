@@ -26,3 +26,16 @@
    cd frontend-admin && cp .env.example .env && npm install && npm run dev
    
    Runs on http://localhost:5175
+
+## GitHub Secrets Required for CI/CD
+To enable automated deployments via GitHub Actions, configure the following repository secrets:
+- `JWT_SECRET`: Backend JWT signing key
+- `AES_SECRET_KEY`: Backend AES encryption key (32 bytes)
+- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`: Cloudinary integration
+- `SENDGRID_API_KEY`: Sendgrid API key for notifications
+- `RENDER_DEPLOY_HOOK`: The deployment webhook URL from your Render dashboard
+- `VERCEL_TOKEN`: Vercel Personal Access Token
+- `VERCEL_ORG_ID`: Vercel Organization ID
+- `VERCEL_PROJECT_ID_USER`: Vercel Project ID for frontend-user
+- `VERCEL_PROJECT_ID_VENDOR`: Vercel Project ID for frontend-vendor
+- `VERCEL_PROJECT_ID_ADMIN`: Vercel Project ID for frontend-admin
