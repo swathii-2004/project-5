@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts"
 import { format, parseISO } from "date-fns"
-import api from "../../lib/api"
+import api from "../../lib/axios"
 
 export default function AnalyticsPage() {
   const [period, setPeriod] = useState<"week" | "month">("week")

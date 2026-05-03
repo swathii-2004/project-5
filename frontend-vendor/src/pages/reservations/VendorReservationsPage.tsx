@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Clock, CheckCircle, XCircle, ChevronDown } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { toast } from 'sonner'
-import api from '../../lib/api'
+import api from '../../lib/axios'
 
 const TABS = [
   { key: 'pending',   label: 'Pending' },

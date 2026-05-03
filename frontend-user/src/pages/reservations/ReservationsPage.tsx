@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, CheckCircle, Clock, XCircle, MapPin, Star, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDistanceToNow } from 'date-fns'
-import api from '../../lib/api'
+import api from '../../lib/axios'
 
 const TABS = [
   { key: 'active', label: 'Active', statuses: ['pending', 'confirmed'] },

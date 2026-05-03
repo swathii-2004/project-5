@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { Users, Store, Clock, Package, ShoppingBag, IndianRupee, Info } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts"
-import api from "../../lib/api"
+import api from "../../lib/axios"
 
 export default function AnalyticsPage() {
   const { data: analytics, isLoading } = useQuery({

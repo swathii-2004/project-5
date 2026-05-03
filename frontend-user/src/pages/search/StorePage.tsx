@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { MapPin, Star, ShoppingBag } from 'lucide-react'
-import api from '../../lib/api'
+import api from '../../lib/axios'
 
 export default function StorePage() {
   const { store_id } = useParams<{ store_id: string }>()

@@ -5,7 +5,7 @@ import { MessageSquare, Send } from "lucide-react"
 import { format } from "date-fns"
 import { useAuthStore } from "../../store/authStore"
 import { useChat } from "../../hooks/useChat"
-import api from "../../lib/api"
+import api from "../../lib/axios"
 
 function ChatView({ reservationId, currentUserId }: { reservationId: string; currentUserId: string }) {
   const { messages, sendMessage, connected, loading } = useChat(reservationId, true)

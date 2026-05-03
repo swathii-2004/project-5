@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
 import { Users, Store, Clock, Package, ShoppingBag, IndianRupee } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
-import api from "../../lib/api"
+import api from "../../lib/axios"
 
 export default function DashboardPage() {
   const navigate = useNavigate()

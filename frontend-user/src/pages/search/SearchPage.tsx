@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { MapPin, SlidersHorizontal, Star, ShoppingBag, WifiOff } from 'lucide-react'
 import { useGeolocation } from '../../hooks/useGeolocation'
 import OfflineBanner from '../../components/shared/OfflineBanner'
-import api from '../../lib/api'
+import api from '../../lib/axios'
 
 const CATEGORIES = ['all', 'groceries', 'dairy', 'bakery', 'meat', 'vegetables', 'fruits', 'beverages', 'snacks']
 const RADIUS_OPTIONS = [1, 2, 5, 10]

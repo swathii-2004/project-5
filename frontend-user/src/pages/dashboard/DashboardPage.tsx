@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
 import { Search, Map, AlertTriangle, Heart, ShoppingBag, CheckCircle, Package } from "lucide-react"
-import api from "../../lib/api"
+import api from "../../lib/axios"
 import { useAuthStore } from "../../store/authStore"
 import { useLocationStore } from "../../store/locationStore"
 

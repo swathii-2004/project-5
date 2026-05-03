@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { X } from 'lucide-react'
 import { toast } from 'sonner'
-import api from '../../lib/api'
+import api from '../../lib/axios'
 
 interface Props {
   product: any

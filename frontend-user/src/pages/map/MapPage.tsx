@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { MapPin, Package, Star } from 'lucide-react'
 import { useGeolocation } from '../../hooks/useGeolocation'
-import api from '../../lib/api'
+import api from '../../lib/axios'
 
 const STOCK_BADGE: Record<string, { label: string; cls: string }> = {
   in_stock:     { label: 'In Stock',    cls: 'bg-green-100 text-green-700' },

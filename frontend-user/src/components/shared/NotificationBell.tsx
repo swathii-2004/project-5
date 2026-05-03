@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "react-router-dom"
 import { useState } from "react"
 import { formatDistanceToNow } from "date-fns"
-import api from "../../lib/api"
+import api from "../../lib/axios"
 
 export default function NotificationBell() {
   const queryClient = useQueryClient()

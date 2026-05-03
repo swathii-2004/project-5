@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import { toast } from "sonner"
-import api from "../lib/api"
+import api from "../lib/axios"
 import { useAuthStore } from "../store/authStore"
 import { requestNotificationPermission, onForegroundMessage } from "../lib/firebase"
 

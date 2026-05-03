@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { MapPin, Heart, Star, Minus, Plus, ShoppingBag, Users, X } from 'lucide-react'
 import { toast } from 'sonner'
-import api from '../../lib/api'
+import api from '../../lib/axios'
 import { useAuthStore } from '../../store/authStore'
 import GroupReservationModal from '../reservations/GroupReservationModal'
 

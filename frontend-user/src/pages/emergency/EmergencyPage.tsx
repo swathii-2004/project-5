@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { MapPin, AlertTriangle, ShoppingBag, Navigation } from 'lucide-react'
 import { useGeolocation } from '../../hooks/useGeolocation'
-import api from '../../lib/api'
+import api from '../../lib/axios'
 
 const RADIUS_OPTS = [5, 10, 25]
 

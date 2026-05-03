@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Heart, MapPin, X } from 'lucide-react'
 import { toast } from 'sonner'
-import api from '../../lib/api'
+import api from '../../lib/axios'
 
 export default function WishlistPage() {
   const navigate = useNavigate()
