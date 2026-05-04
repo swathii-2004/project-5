@@ -94,7 +94,7 @@ export default function ChatPage() {
 
   const { data: reservations, isLoading } = useQuery({
     queryKey: ["reservations", "active-chats"],
-    queryFn: () => api.get("/reservations/user", { params: { status: "confirmed" } }).then((r) => r.data),
+    queryFn: () => api.get("/reservations/user", { params: { status: "confirmed" } }).then((r) => r.data?.reservations || []),
   })
 
   if (isLoading) return <div className="p-8 text-center animate-pulse">Loading chats...</div>
