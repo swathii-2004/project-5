@@ -19,3 +19,7 @@ backend/.env
 frontend-user/.env
 frontend-vendor/.env
 frontend-admin/.env
+# Envs
+.env
+.env.*
+!.env.example
