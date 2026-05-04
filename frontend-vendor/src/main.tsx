@@ -1,3 +1,5 @@
+import { Toaster } from 'sonner'
+import './index.css'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
@@ -12,6 +14,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <App />
+      <Toaster position="top-right" richColors />
       </BrowserRouter>
     </QueryClientProvider>
   </React.StrictMode>
