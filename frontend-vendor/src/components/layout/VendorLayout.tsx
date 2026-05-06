@@ -6,7 +6,8 @@ import {
   Boxes, 
   BarChart2, 
   MessageSquare, 
-  User
+  User,
+  LogOut
 } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
 import NotificationBell from '../shared/NotificationBell'

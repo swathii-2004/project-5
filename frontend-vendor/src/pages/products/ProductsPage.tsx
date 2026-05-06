@@ -181,10 +181,10 @@ function ProductFormSheet({ product, onClose, onSuccess }: { product?: any, onCl
 
     try {
       if (product) {
-        await api.put(`/products/${product.id}`, formData)
+        await api.put(`/products/${product.id}/`, formData)
         toast.success('Product updated successfully')
       } else {
-        await api.post('/products', formData)
+        await api.post('/products/', formData)
         toast.success('Product added successfully')
       }
       onSuccess()

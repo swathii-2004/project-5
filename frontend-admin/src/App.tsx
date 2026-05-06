@@ -1,6 +1,10 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
+import AdminLayout from './components/layout/AdminLayout'
 import LoginPage from './pages/auth/LoginPage'
+import DashboardPage from './pages/dashboard/DashboardPage'
+import PendingApprovalsPage from './pages/approvals/PendingApprovalsPage'
+import UserManagementPage from './pages/users/UserManagementPage'
 
 function App() {
   return (
@@ -8,10 +12,12 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       
       <Route element={<ProtectedRoute />}>
-        <Route path="/dashboard" element={<div>Admin Dashboard — Coming Soon</div>} />
-        <Route path="/approvals" element={<div>Approvals — Coming Soon</div>} />
-        <Route path="/users" element={<div>Users — Coming Soon</div>} />
-        <Route path="/analytics" element={<div>Analytics — Coming Soon</div>} />
+        <Route element={<AdminLayout />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/approvals" element={<PendingApprovalsPage />} />
+          <Route path="/users" element={<UserManagementPage />} />
+          <Route path="/analytics" element={<DashboardPage />} />
+        </Route>
       </Route>
 
       <Route path="/" element={<Navigate to="/dashboard" replace />} />

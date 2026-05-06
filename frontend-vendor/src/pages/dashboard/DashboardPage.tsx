@@ -15,7 +15,7 @@ export default function DashboardPage() {
 
   const { data: pendingReservations, isLoading: pendingLoading } = useQuery({
     queryKey: ["vendor", "reservations", "pending", "limit"],
-    queryFn: () => api.get("/reservations/vendor", { params: { status: "pending", limit: 3 } }).then((r) => r.data),
+    queryFn: () => api.get("/reservations/vendor", { params: { status: "pending", limit: 3 } }).then((r) => r.data?.reservations || []),
   })
 
   const confirmMutation = useMutation({
