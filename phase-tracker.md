@@ -612,7 +612,11 @@ Vendors can create and manage product listings with images. Users can browse, se
 
 | # | Description | Phase found | Status |
 |---|---|---|---|
-| — | — | — | — |
+| 1 | Reservation visibility in User Dashboard/Page | Phase 7 | ✅ Fixed |
+| 2 | Vendor/Admin Analytics charts not loading | Phase 7 | ✅ Fixed |
+| 3 | Chat only showing confirmed reservations | Phase 7 | ✅ Fixed |
+| 4 | Missing phone/avatar in profile updates | Phase 7 | ✅ Fixed |
+| 5 | Group reservation stock validation logging | Phase 7 | ✅ Fixed |
 
 ---
 
