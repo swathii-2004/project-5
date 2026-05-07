@@ -23,7 +23,10 @@ async def create_reservation(data: ReservationCreate, user_id: str, db) -> dict:
         raise HTTPException(status_code=404, detail="Product not found")
 
     available_qty = product["stock"] - product.get("reserved_qty", 0)
+    print(f"DEBUG: Reservation attempt - Product: {product['name']}, Stock: {product['stock']}, Reserved: {product.get('reserved_qty', 0)}, Available: {available_qty}, Requested: {data.quantity}")
+    
     if available_qty < data.quantity:
+        print(f"DEBUG: Insufficient stock - Available: {available_qty}, Requested: {data.quantity}")
         raise HTTPException(
             status_code=400,
             detail=f"Insufficient stock. Only {available_qty} available."

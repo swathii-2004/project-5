@@ -38,48 +38,62 @@ async def create_group_reservation(
     data: GroupReservationCreate,
     current_user: dict = Depends(require_role(["user"]))
 ):
+    print(f"DEBUG: Creating group reservation - User: {current_user['_id']}, Group: {data.group_name}, Store: {data.store_id}")
     now = datetime.utcnow()
     total_value = 0.0
     for item in data.items:
-        product = await db.products.find_one({"_id": ObjectId(item["product_id"])})
-        if not product:
-            raise HTTPException(status_code=404, detail=f"Product {item['product_id']} not found")
-        available = product["stock"] - product.get("reserved_qty", 0)
-        if available < item["quantity"]:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Insufficient stock for {product['name']}"
-            )
-        total_value += product["price"] * item["quantity"]
+        try:
+            product = await db.products.find_one({"_id": ObjectId(item["product_id"])})
+            if not product:
+                print(f"DEBUG: Product {item['product_id']} not found")
+                raise HTTPException(status_code=404, detail=f"Product {item['product_id']} not found")
+            
+            available = product["stock"] - product.get("reserved_qty", 0)
+            if available < item["quantity"]:
+                print(f"DEBUG: Insufficient stock for {product['name']}. Available: {available}, Requested: {item['quantity']}")
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Insufficient stock for {product['name']}"
+                )
+            total_value += product["price"] * item["quantity"]
+        except Exception as e:
+            if isinstance(e, HTTPException): raise e
+            print(f"DEBUG: Error processing item {item}: {str(e)}")
+            raise HTTPException(status_code=400, detail="Invalid product ID in items")
 
-    total_qty = sum(i["quantity"] for i in data.items)
-    doc = {
-        "created_by": ObjectId(current_user["_id"]),
-        "store_id": ObjectId(data.store_id),
-        "group_name": data.group_name,
-        "items": data.items,
-        "members": [{
-            "user_id": ObjectId(current_user["_id"]),
-            "email": current_user["email"],
-            "status": "confirmed",
-            "portion_qty": total_qty
-        }],
-        "status": "assembling",
-        "total_value": total_value,
-        "reservation_id": None,
-        "created_at": now,
-        "updated_at": now
-    }
-    result = await db.group_reservations.insert_one(doc)
-    doc["_id"] = result.inserted_id
+    try:
+        total_qty = sum(i["quantity"] for i in data.items)
+        doc = {
+            "created_by": ObjectId(current_user["_id"]),
+            "store_id": ObjectId(data.store_id),
+            "group_name": data.group_name,
+            "items": data.items,
+            "members": [{
+                "user_id": ObjectId(current_user["_id"]),
+                "email": current_user["email"],
+                "status": "confirmed",
+                "portion_qty": total_qty
+            }],
+            "status": "assembling",
+            "total_value": total_value,
+            "reservation_id": None,
+            "created_at": now,
+            "updated_at": now
+        }
+        result = await db.group_reservations.insert_one(doc)
+        doc["_id"] = result.inserted_id
+        print(f"DEBUG: Group reservation created with ID: {doc['_id']}")
 
-    for email in data.invite_emails:
-        await _send_invite(email, current_user.get("name", "A user"), data.group_name)
+        for email in data.invite_emails:
+            await _send_invite(email, current_user.get("name", "A user"), data.group_name)
 
-    doc["id"] = str(doc["_id"])
-    doc["created_by"] = str(doc["created_by"])
-    doc["store_id"] = str(doc["store_id"])
-    return doc
+        doc["id"] = str(doc["_id"])
+        doc["created_by"] = str(doc["created_by"])
+        doc["store_id"] = str(doc["store_id"])
+        return doc
+    except Exception as e:
+        print(f"DEBUG: Error inserting group reservation: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 
 @router.get("/reservations/group/{group_id}")

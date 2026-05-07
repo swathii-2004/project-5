@@ -5,6 +5,8 @@ import LoginPage from './pages/auth/LoginPage'
 import DashboardPage from './pages/dashboard/DashboardPage'
 import PendingApprovalsPage from './pages/approvals/PendingApprovalsPage'
 import UserManagementPage from './pages/users/UserManagementPage'
+import AnalyticsPage from './pages/analytics/AnalyticsPage'
+import ProfilePage from './pages/profile/ProfilePage'
 
 function App() {
   return (
@@ -16,7 +18,8 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/approvals" element={<PendingApprovalsPage />} />
           <Route path="/users" element={<UserManagementPage />} />
-          <Route path="/analytics" element={<DashboardPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Route>
 

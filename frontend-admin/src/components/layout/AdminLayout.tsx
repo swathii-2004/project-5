@@ -1,4 +1,4 @@
-import { Outlet, Link, useLocation, useNavigate } from "react-router-dom"
+import { Outlet, Link, useLocation, useNavigate, NavLink } from "react-router-dom"
 import { 
   LayoutDashboard, 
   UserCheck, 
@@ -7,10 +7,13 @@ import {
   LogOut,
   ShieldCheck,
   Menu,
-  X
+  X,
+  UserCircle,
+  Bell
 } from "lucide-react"
 import { useState } from "react"
 import { useAuthStore } from "../../store/authStore"
+import NotificationBell from "../../components/shared/NotificationBell"
 
 export default function AdminLayout() {
   const { logout, user } = useAuthStore()
@@ -32,99 +35,117 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar for desktop */}
-      <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 bg-slate-900 text-white">
+      {/* Sidebar - Desktop */}
+      <aside className="hidden md:flex md:w-72 md:flex-col md:fixed md:inset-y-0 bg-slate-950 text-white shadow-2xl z-50">
         <div className="flex-1 flex flex-col min-h-0">
-          <div className="flex items-center h-16 flex-shrink-0 px-4 bg-slate-950">
-            <ShieldCheck className="h-8 w-8 text-blue-400" />
-            <span className="ml-3 text-lg font-bold tracking-wider text-white">PROXIMART <span className="text-blue-400">ADMIN</span></span>
+          <div className="flex items-center h-20 flex-shrink-0 px-6 bg-slate-950 border-b border-slate-800/50">
+            <div className="p-2 bg-blue-500 rounded-xl mr-3 shadow-lg shadow-blue-500/20">
+              <ShieldCheck className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-xl font-black tracking-tight text-white uppercase">ProxiMart <span className="text-blue-400">Admin</span></span>
           </div>
-          <nav className="mt-5 flex-1 px-2 space-y-1">
+          <nav className="mt-8 flex-1 px-4 space-y-2">
             {navigation.map((item) => (
-              <Link
+              <NavLink
                 key={item.name}
                 to={item.href}
-                className={`${
-                  location.pathname === item.href
-                    ? 'bg-slate-800 text-white'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                } group flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200`}
+                className={({ isActive }) =>
+                  `group flex items-center px-4 py-3.5 text-sm font-bold rounded-2xl transition-all duration-300 ${
+                    isActive 
+                      ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/20 scale-[1.02]' 
+                      : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                  }`
+                }
               >
-                <item.icon
-                  className={`${
-                    location.pathname === item.href ? 'text-blue-400' : 'text-slate-400 group-hover:text-slate-300'
-                  } mr-3 flex-shrink-0 h-5 w-5`}
-                  aria-hidden="true"
-                />
+                <item.icon className="mr-3 h-5 w-5" />
                 {item.name}
-              </Link>
+              </NavLink>
             ))}
           </nav>
         </div>
-        <div className="flex-shrink-0 flex bg-slate-800 p-4">
-          <div className="flex-shrink-0 w-full group block">
-            <div className="flex items-center">
-              <div className="inline-block h-9 w-9 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 font-bold">
-                {user?.name?.[0] || 'A'}
-              </div>
-              <div className="ml-3">
-                <p className="text-sm font-medium text-white">{user?.name || 'Administrator'}</p>
-                <button 
-                  onClick={handleLogout}
-                  className="text-xs font-medium text-slate-400 group-hover:text-slate-300 flex items-center gap-1 mt-0.5"
-                >
-                  <LogOut className="h-3 w-3" /> Sign out
-                </button>
-              </div>
+        
+        <div className="p-6 border-t border-slate-800/50 bg-slate-950/50">
+          <button 
+            onClick={() => navigate('/profile')}
+            className="flex items-center gap-3 mb-6 p-3 rounded-2xl bg-slate-900 hover:bg-slate-800 transition-all group"
+          >
+            <div className="h-10 w-10 rounded-xl bg-slate-800 group-hover:bg-blue-600 transition-colors flex items-center justify-center text-white font-bold">
+              {user?.name?.[0] || 'A'}
             </div>
-          </div>
+            <div className="flex-1 text-left min-w-0">
+              <p className="text-xs font-bold text-white truncate">{user?.name || 'Administrator'}</p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Root Access</p>
+            </div>
+          </button>
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
+          >
+            <LogOut className="h-5 w-5" /> Sign Out
+          </button>
         </div>
       </aside>
 
-      {/* Mobile menu */}
-      <div className="md:hidden flex flex-col w-full">
-        <div className="bg-slate-900 text-white p-4 flex items-center justify-between">
-          <div className="flex items-center">
-            <ShieldCheck className="h-6 w-6 text-blue-400" />
-            <span className="ml-2 text-sm font-bold tracking-wider">PROXIMART ADMIN</span>
+      {/* Main Content Area */}
+      <div className="flex flex-col flex-1 md:pl-72">
+        {/* Desktop Header */}
+        <header className="hidden md:flex items-center justify-between px-8 h-20 bg-white border-b border-gray-100 sticky top-0 z-40">
+          <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-[0.2em]">
+            System Control Panel <span className="text-gray-200">/</span> <span className="text-gray-900">{location.pathname.substring(1)}</span>
           </div>
-          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-1">
-            {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-          </button>
+          <div className="flex items-center gap-6">
+            <NotificationBell />
+            <div className="h-8 w-px bg-gray-100" />
+            <button onClick={() => navigate('/profile')} className="p-2.5 bg-gray-50 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-2xl transition-all">
+              <UserCircle className="h-6 w-6" />
+            </button>
+          </div>
+        </header>
+
+        {/* Mobile Header */}
+        <div className="md:hidden flex items-center justify-between px-6 h-16 bg-slate-950 text-white sticky top-0 z-50">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="h-6 w-6 text-blue-400" />
+            <span className="font-black tracking-tight text-sm uppercase">Admin</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <NotificationBell />
+            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 rounded-xl bg-slate-900">
+              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
-        
+
         {isMobileMenuOpen && (
-          <div className="bg-slate-800 p-2 space-y-1">
+          <div className="md:hidden fixed inset-0 top-16 z-50 bg-slate-950 p-6 space-y-2 animate-in slide-in-from-top">
             {navigation.map((item) => (
-              <Link
+              <NavLink
                 key={item.name}
                 to={item.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`${
-                  location.pathname === item.href
-                    ? 'bg-slate-700 text-white'
-                    : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-                } block px-3 py-2 rounded-lg text-base font-medium`}
+                className={({ isActive }) =>
+                  `flex items-center gap-4 px-6 py-4 rounded-2xl text-sm font-bold ${
+                    isActive ? 'bg-blue-600 text-white' : 'text-slate-400'
+                  }`
+                }
               >
+                <item.icon className="h-5 w-5" />
                 {item.name}
-              </Link>
+              </NavLink>
             ))}
             <button 
               onClick={handleLogout}
-              className="w-full text-left px-3 py-2 rounded-lg text-base font-medium text-red-400 hover:bg-slate-700"
+              className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-sm font-bold text-red-400"
             >
-              Sign out
+              <LogOut className="h-5 w-5" /> Sign Out
             </button>
           </div>
         )}
-      </div>
 
-      {/* Main content */}
-      <div className="flex flex-col flex-1 md:pl-64">
-        <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8">
+        <main className="flex-1 p-6 lg:p-10">
           <Outlet />
         </main>
       </div>
     </div>
   )
-}
+}

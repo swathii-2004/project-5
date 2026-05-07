@@ -21,6 +21,8 @@ def format_product_response(product: dict) -> ProductResponse:
     product["available_qty"] = product["stock"] - product.get("reserved_qty", 0)
     product["low_stock"] = product["available_qty"] < product.get("low_stock_threshold", 5)
     
+    print(f"DEBUG: Formatting product response - Name: {product['name']}, Stock: {product['stock']}, Reserved: {product.get('reserved_qty', 0)}, Available: {product['available_qty']}")
+    
     return ProductResponse(**product)
 
 @router.post("/", response_model=ProductResponse, status_code=201)
@@ -35,41 +37,69 @@ async def create_product(
     images: List[UploadFile] = File(default=[]),
     current_user: dict = Depends(require_role(["vendor"]))
 ):
-    vendor_profile = await db.vendor_profiles.find_one({"user_id": ObjectId(current_user["_id"])})
+    print(f"DEBUG: Starting product creation for user {current_user['_id']}")
+    print(f"DEBUG: Data - name: {name}, category: {category}, price: {price}, stock: {stock}")
     
-    image_urls = []
-    for image in images[:5]:
-        url = await upload_to_cloudinary(image, folder="proximart/products")
-        image_urls.append(url)
+    try:
+        vendor_profile = await db.vendor_profiles.find_one({"user_id": ObjectId(current_user["_id"])})
+        if not vendor_profile:
+            print("DEBUG: Warning - No vendor profile found for this user")
         
-    tags = json.loads(tags_json)
-    now = datetime.utcnow()
-    
-    product_doc = {
-        "vendor_id": ObjectId(current_user["_id"]),
-        "store_id": vendor_profile["_id"] if vendor_profile else None,
-        "name": name,
-        "description": description,
-        "category": category,
-        "price": price,
-        "stock": stock,
-        "reserved_qty": 0,
-        "low_stock_threshold": low_stock_threshold,
-        "images": image_urls,
-        "is_active": True,
-        "average_rating": 0.0,
-        "total_reviews": 0,
-        "total_reservations": 0,
-        "tags": tags,
-        "discounted_price": None,
-        "created_at": now,
-        "updated_at": now
-    }
-    
-    result = await db.products.insert_one(product_doc)
-    product_doc["_id"] = result.inserted_id
-    
-    return format_product_response(product_doc)
+        image_urls = []
+        print(f"DEBUG: Handling {len(images)} images")
+        for i, image in enumerate(images[:5]):
+            print(f"DEBUG: Uploading image {i+1}: {image.filename}")
+            try:
+                url = await upload_to_cloudinary(image, folder="proximart/products")
+                print(f"DEBUG: Image {i+1} uploaded: {url}")
+                image_urls.append(url)
+            except Exception as e:
+                print(f"DEBUG: Error uploading image {i+1}: {str(e)}")
+                raise HTTPException(status_code=400, detail=f"Image upload failed: {str(e)}")
+            
+        print(f"DEBUG: Parsing tags: {tags_json}")
+        try:
+            tags = json.loads(tags_json)
+        except Exception as e:
+            print(f"DEBUG: Error parsing tags JSON: {str(e)}")
+            raise HTTPException(status_code=400, detail="Invalid tags format")
+            
+        now = datetime.utcnow()
+        
+        product_doc = {
+            "vendor_id": ObjectId(current_user["_id"]),
+            "store_id": vendor_profile["_id"] if vendor_profile else None,
+            "name": name,
+            "description": description,
+            "category": category,
+            "price": price,
+            "stock": stock,
+            "reserved_qty": 0,
+            "low_stock_threshold": low_stock_threshold,
+            "images": image_urls,
+            "is_active": True,
+            "average_rating": 0.0,
+            "total_reviews": 0,
+            "total_reservations": 0,
+            "tags": tags,
+            "discounted_price": None,
+            "created_at": now,
+            "updated_at": now
+        }
+        
+        print("DEBUG: Inserting product into database")
+        result = await db.products.insert_one(product_doc)
+        product_doc["_id"] = result.inserted_id
+        print(f"DEBUG: Product created with ID: {product_doc['_id']}")
+        
+        return format_product_response(product_doc)
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        print(f"DEBUG: Unexpected error in create_product: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/mine")
 async def get_my_products(

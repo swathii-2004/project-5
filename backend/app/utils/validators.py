@@ -2,12 +2,20 @@ import magic
 from fastapi import UploadFile, HTTPException
 
 async def validate_file(file: UploadFile) -> None:
+    print(f"DEBUG: Validating file: {file.filename}")
     # Read first 2048 bytes for MIME detection
     file_bytes = await file.read(2048)
-    mime_type = magic.from_buffer(file_bytes, mime=True)
+    try:
+        mime_type = magic.from_buffer(file_bytes, mime=True)
+        print(f"DEBUG: MIME type detected: {mime_type}")
+    except Exception as e:
+        print(f"DEBUG: Magic error: {str(e)}")
+        await file.seek(0)
+        raise HTTPException(status_code=500, detail=f"Magic library error: {str(e)}")
     
     allowed_mimes = ["application/pdf", "image/jpeg", "image/png"]
     if mime_type not in allowed_mimes:
+        print(f"DEBUG: Invalid MIME type: {mime_type}")
         await file.seek(0)
         raise HTTPException(status_code=400, detail="Invalid file type. Only PDF, JPG, PNG allowed.")
         

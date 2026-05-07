@@ -21,7 +21,17 @@ from app.routers.notifications import router as notifications_router
 from app.routers.chat import router as chat_router
 from app.services.notification_service import init_firebase
 
+import cloudinary
+
 app = FastAPI(title="ProxiMart API", version="1.0.0")
+
+# Configure Cloudinary
+cloudinary.config(
+    cloud_name=settings.CLOUDINARY_CLOUD_NAME,
+    api_key=settings.CLOUDINARY_API_KEY,
+    api_secret=settings.CLOUDINARY_API_SECRET,
+    secure=True
+)
 
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter

@@ -13,6 +13,7 @@ import MapPage from './pages/map/MapPage'
 import EmergencyPage from './pages/emergency/EmergencyPage'
 import ChatPage from './pages/chat/ChatPage'
 import NotificationsPage from './pages/notifications/NotificationsPage'
+import ProfilePage from './pages/profile/ProfilePage'
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
           <Route path="/emergency" element={<EmergencyPage />} />
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Route>
 

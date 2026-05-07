@@ -92,20 +92,24 @@ export default function ChatPage() {
   const { user } = useAuthStore()
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
-  const { data: reservations, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["reservations", "active-chats"],
-    queryFn: () => api.get("/reservations/vendor", { params: { status: "confirmed" } }).then((r) => r.data),
+    queryFn: () => api.get("/reservations/vendor", { params: { limit: 100 } }).then((r) => r.data),
   })
+
+  const reservations = data?.reservations?.filter((r: any) => ["pending", "confirmed"].includes(r.status)) || []
 
   if (isLoading) return <div className="p-8 text-center animate-pulse">Loading chats...</div>
 
-  if (!reservations || reservations.length === 0) {
+  if (reservations.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] text-center px-4">
-        <MessageSquare className="h-16 w-16 text-gray-200 mb-4" />
+        <div className="p-6 bg-indigo-50 rounded-3xl mb-4">
+          <MessageSquare className="h-12 w-12 text-indigo-600" />
+        </div>
         <h2 className="text-xl font-bold text-gray-900 mb-2">No active chats</h2>
         <p className="text-gray-500 mb-6 max-w-sm">
-          Chats appear here automatically when a reservation is confirmed.
+          Chats appear here when you have pending or confirmed reservations.
         </p>
       </div>
     )

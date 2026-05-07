@@ -70,12 +70,14 @@ class UserLogin(BaseModel):
     password: str
 
 class UserResponse(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
     id: str
     name: str
     email: str
+    phone: Optional[str] = None
     role: str
     status: str
+    avatar_url: Optional[str] = None
 
 class TokenResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")

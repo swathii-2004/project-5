@@ -29,7 +29,7 @@ class StockUpdateRequest(BaseModel):
     quantity: int
 
 class ProductResponse(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
     
     id: str
     vendor_id: str

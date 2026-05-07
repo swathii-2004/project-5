@@ -17,7 +17,8 @@ class FCMTokenUpdate(BaseModel):
 async def get_me(current_user: dict = Depends(get_current_user), db=Depends(get_db)):
     user = await db.users.find_one({"_id": current_user["_id"]})
     
-    decrypted_phone = decrypt(user.get("phone"))
+    if user.get("phone"):
+        user["phone"] = decrypt(user["phone"])
     
     user["id"] = str(user["_id"])
     return UserResponse(**user)
@@ -134,10 +135,8 @@ async def update_me(data: UserUpdate, current_user: dict = Depends(get_current_u
     await db.users.update_one({"_id": current_user["_id"]}, {"$set": update_dict})
     
     updated_user = await db.users.find_one({"_id": current_user["_id"]})
-    return UserResponse(
-        id=str(updated_user["_id"]),
-        name=updated_user["name"],
-        email=updated_user["email"],
-        role=updated_user["role"],
-        status=updated_user["status"]
-    )
+    if updated_user.get("phone"):
+        updated_user["phone"] = decrypt(updated_user["phone"])
+        
+    updated_user["id"] = str(updated_user["_id"])
+    return UserResponse(**updated_user)
