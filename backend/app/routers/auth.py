@@ -79,7 +79,9 @@ async def signup(
 @router.post("/login")
 @limiter.limit("10/minute")
 async def login_route(request: Request, data: UserLogin, db=Depends(get_db)):
+    print(f"Login request received for email: {data.email}")
     user_doc = await login(data, db)
+    print(f"Login successful for user: {user_doc.get('email')}")
     
     access_token = encode_token(
         {"user_id": str(user_doc["_id"]), "role": user_doc["role"]},

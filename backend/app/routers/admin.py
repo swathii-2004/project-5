@@ -11,7 +11,7 @@ from app.services.email_service import send_approval_email, send_rejection_email
 from app.utils.encryption import decrypt
 from app.config import settings
 
-router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(require_role(["admin"]))])
+router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(require_role(['admin']))])
 
 @router.get("/pending")
 async def get_pending(role: str = "vendor", db=Depends(get_db)):
@@ -39,7 +39,7 @@ async def get_pending(role: str = "vendor", db=Depends(get_db)):
     return result
 
 @router.put("/approve/{user_id}")
-async def approve_user(user_id: str, admin: dict = Depends(require_role(["admin"])), db=Depends(get_db)):
+async def approve_user(user_id: str, admin: dict = Depends(require_role(['admin'])), db=Depends(get_db)):
     user = await db.users.find_one({"_id": ObjectId(user_id)})
     if not user: raise HTTPException(404, "User not found")
     if user.get("status") != "pending": raise HTTPException(400, "This application is not pending")
@@ -50,7 +50,7 @@ async def approve_user(user_id: str, admin: dict = Depends(require_role(["admin"
     return {"message": "Vendor approved successfully", "user_id": user_id}
 
 @router.put("/reject/{user_id}")
-async def reject_user(user_id: str, data: RejectRequest, admin: dict = Depends(require_role(["admin"])), db=Depends(get_db)):
+async def reject_user(user_id: str, data: RejectRequest, admin: dict = Depends(require_role(['admin'])), db=Depends(get_db)):
     user = await db.users.find_one({"_id": ObjectId(user_id)})
     if not user: raise HTTPException(404, "User not found")
     if user.get("status") != "pending": raise HTTPException(400, "This application is not pending")
@@ -82,7 +82,7 @@ async def get_users(role: str = None, search: str = None, page: int = 1, limit: 
     }
 
 @router.put("/users/{user_id}/deactivate")
-async def deactivate_user(user_id: str, admin: dict = Depends(require_role(["admin"])), db=Depends(get_db)):
+async def deactivate_user(user_id: str, admin: dict = Depends(require_role(['admin'])), db=Depends(get_db)):
     user = await db.users.find_one({"_id": ObjectId(user_id)})
     if not user: raise HTTPException(404, "User not found")
     if user["role"] == "admin": raise HTTPException(403, "Cannot deactivate admin accounts")
@@ -92,7 +92,7 @@ async def deactivate_user(user_id: str, admin: dict = Depends(require_role(["adm
     return {"message": "User deactivated successfully"}
 
 @router.put("/users/{user_id}/reactivate")
-async def reactivate_user(user_id: str, admin: dict = Depends(require_role(["admin"])), db=Depends(get_db)):
+async def reactivate_user(user_id: str, admin: dict = Depends(require_role(['admin'])), db=Depends(get_db)):
     user = await db.users.find_one({"_id": ObjectId(user_id)})
     if not user: raise HTTPException(404, "User not found")
     
@@ -101,7 +101,7 @@ async def reactivate_user(user_id: str, admin: dict = Depends(require_role(["adm
     return {"message": "User reactivated successfully"}
 
 @router.delete("/users/{user_id}")
-async def delete_user(user_id: str, admin: dict = Depends(require_role(["admin"])), db=Depends(get_db)):
+async def delete_user(user_id: str, admin: dict = Depends(require_role(['admin'])), db=Depends(get_db)):
     user = await db.users.find_one({"_id": ObjectId(user_id)})
     if not user: raise HTTPException(404, "User not found")
     if user["role"] == "admin": raise HTTPException(403, "Cannot delete admin accounts")

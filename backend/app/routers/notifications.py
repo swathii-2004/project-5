@@ -9,7 +9,7 @@ router = APIRouter(tags=["notifications"])
 async def get_notifications(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
-    current_user: dict = Depends(require_role(["user", "vendor", "admin"]))
+    current_user: dict = Depends(require_role(['user', 'vendor', 'admin']))
 ):
     query = {"user_id": ObjectId(current_user["_id"])}
     total = await db.notifications.count_documents(query)
@@ -36,7 +36,7 @@ async def get_notifications(
 @router.put("/{notification_id}/read")
 async def mark_read(
     notification_id: str,
-    current_user: dict = Depends(require_role(["user", "vendor", "admin"]))
+    current_user: dict = Depends(require_role(['user', 'vendor', 'admin']))
 ):
     await db.notifications.update_one(
         {"_id": ObjectId(notification_id), "user_id": ObjectId(current_user["_id"])},
@@ -46,7 +46,7 @@ async def mark_read(
 
 @router.put("/read-all")
 async def mark_all_read(
-    current_user: dict = Depends(require_role(["user", "vendor", "admin"]))
+    current_user: dict = Depends(require_role(['user', 'vendor', 'admin']))
 ):
     await db.notifications.update_many(
         {"user_id": ObjectId(current_user["_id"])},

@@ -37,7 +37,7 @@ def _format(r: dict) -> dict:
 @router.post("/reservations/", status_code=201, response_model=ReservationResponse)
 async def make_reservation(
     data: ReservationCreate,
-    current_user: dict = Depends(require_role(["user", "admin", "vendor"]))
+    current_user: dict = Depends(require_role(['user', 'admin', 'vendor']))
 ):
     doc = await create_reservation(data, str(current_user["_id"]), db)
     return _format(doc)
@@ -48,7 +48,7 @@ async def list_user_reservations(
     status: Optional[str] = None,
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
-    current_user: dict = Depends(require_role(["user", "admin", "vendor"]))
+    current_user: dict = Depends(require_role(['user', 'admin', 'vendor']))
 ):
     query = {"user_id": ObjectId(current_user["_id"])}
     if status:
@@ -72,7 +72,7 @@ async def list_vendor_reservations(
     status: Optional[str] = None,
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
-    current_user: dict = Depends(require_role(["vendor"]))
+    current_user: dict = Depends(require_role(['vendor', 'admin']))
 ):
     query = {"vendor_id": ObjectId(current_user["_id"])}
     if status:
@@ -91,7 +91,7 @@ async def list_vendor_reservations(
 async def confirm(
     reservation_id: str,
     data: ConfirmReservationRequest,
-    current_user: dict = Depends(require_role(["vendor"]))
+    current_user: dict = Depends(require_role(['vendor', 'admin']))
 ):
     doc = await confirm_reservation(reservation_id, current_user["_id"], data.note, db)
     return _format(doc)
@@ -101,7 +101,7 @@ async def confirm(
 async def reject(
     reservation_id: str,
     data: RejectReservationRequest,
-    current_user: dict = Depends(require_role(["vendor"]))
+    current_user: dict = Depends(require_role(['vendor', 'admin']))
 ):
     doc = await reject_reservation(reservation_id, current_user["_id"], data.reason, db)
     return _format(doc)
@@ -110,7 +110,7 @@ async def reject(
 @router.put("/reservations/{reservation_id}/complete", response_model=ReservationResponse)
 async def complete(
     reservation_id: str,
-    current_user: dict = Depends(require_role(["vendor"]))
+    current_user: dict = Depends(require_role(['vendor', 'admin']))
 ):
     doc = await complete_reservation(reservation_id, current_user["_id"], db)
     return _format(doc)
@@ -119,7 +119,7 @@ async def complete(
 @router.put("/reservations/{reservation_id}/cancel", response_model=ReservationResponse)
 async def cancel(
     reservation_id: str,
-    current_user: dict = Depends(require_role(["user", "admin", "vendor"]))
+    current_user: dict = Depends(require_role(['user', 'admin', 'vendor']))
 ):
     doc = await cancel_reservation(reservation_id, current_user["_id"], db)
     return _format(doc)

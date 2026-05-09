@@ -19,7 +19,7 @@ function StarRating({ rating }: { rating: number }) {
 
 function ReservationModal({ product, onClose }: { product: any; onClose: () => void }) {
   const navigate = useNavigate()
-  const { user } = useAuthStore()
+  const { user, isAuthenticated } = useAuthStore()
   const [qty, setQty] = useState(1)
   const [phone, setPhone] = useState(user?.phone ?? '')
   const available = product.available_qty ?? product.stock
@@ -28,7 +28,7 @@ function ReservationModal({ product, onClose }: { product: any; onClose: () => v
     mutationFn: () =>
       api.post('/reservations/', {
         product_id: product.id,
-        store_id: product.store_id ?? product.vendor_id,
+        store_id: product.store_id || product.vendor_id,
         quantity: qty,
         pickup_contact_phone: phone,
       }),
@@ -116,7 +116,7 @@ export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const qc = useQueryClient()
-  const { user } = useAuthStore()
+  const { user, isAuthenticated } = useAuthStore()
   const [activeImg, setActiveImg] = useState(0)
   const [wishlisted, setWishlisted] = useState(false)
   const [showReserve, setShowReserve] = useState(false)
@@ -250,7 +250,7 @@ export default function ProductDetailPage() {
               Reserve
             </button>
 
-            {user && (
+            {isAuthenticated && (
               <button
                 onClick={() => wishlistMutation.mutate()}
                 disabled={wishlistMutation.isLoading}

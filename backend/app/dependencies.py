@@ -19,9 +19,6 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db=Depends(get_d
     if user.get("status") != "active":
         raise HTTPException(status_code=401, detail="Account is not active")
         
-    with open("access_logs.txt", "a") as f:
-        f.write(f"AUTH_SUCCESS: User {user.get('email')} has role {user.get('role')}\n")
-        
     return user
 
 def require_role(roles: list[str]):
@@ -30,8 +27,6 @@ def require_role(roles: list[str]):
         allowed_roles = [r.lower() for r in roles]
         
         if user_role not in allowed_roles:
-            with open("access_logs.txt", "a") as f:
-                f.write(f"DENIED: User {current_user.get('email')} with role {current_user.get('role')} tried to access roles {roles}\n")
             raise HTTPException(status_code=403, detail="Insufficient permissions")
         return current_user
     return guard

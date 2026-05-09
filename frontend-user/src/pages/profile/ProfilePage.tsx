@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { User, Phone, Mail, Camera, LogOut, Shield, ChevronRight, Bell, Heart, CreditCard } from 'lucide-react'
 import { toast } from 'sonner'
@@ -12,6 +12,8 @@ export default function ProfilePage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const [editing, setEditing] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  
   
   const [name, setName] = useState(user?.name || '')
   const [phone, setPhone] = useState(user?.phone || '')
@@ -32,6 +34,25 @@ export default function ProfilePage() {
     navigate('/login')
   }
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string
+      // Send the base64 string to the server
+      updateMutation.mutate({ avatar_url: dataUrl })
+    }
+    reader.onerror = () => toast.error('Failed to read file')
+    reader.readAsDataURL(file)
+  }
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
@@ -49,9 +70,20 @@ export default function ProfilePage() {
                 user?.name?.[0]?.toUpperCase() ?? 'U'
               )}
             </div>
-            <button className="absolute -bottom-2 -right-2 p-3 bg-white text-blue-600 rounded-2xl shadow-xl hover:scale-110 transition group-hover:rotate-12">
+            <button 
+              onClick={() => fileInputRef.current?.click()}
+              disabled={updateMutation.isLoading}
+              className="absolute -bottom-2 -right-2 p-3 bg-white text-blue-600 rounded-2xl shadow-xl hover:scale-110 transition group-hover:rotate-12 disabled:opacity-50"
+            >
               <Camera className="h-5 w-5" />
             </button>
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              className="hidden" 
+              accept="image/*" 
+              onChange={handleImageChange} 
+            />
           </div>
           
           <div className="text-center mt-6 space-y-1">

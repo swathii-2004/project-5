@@ -107,7 +107,7 @@ async def get_chat_history(
     reservation_id: str,
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=100),
-    current_user: dict = Depends(require_role(["user", "vendor"])),
+    current_user: dict = Depends(require_role(['user', 'vendor', 'admin'])),
     db = Depends(get_db)
 ):
     try:

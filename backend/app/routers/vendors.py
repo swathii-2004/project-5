@@ -13,7 +13,7 @@ router = APIRouter()
 
 @router.get("/me/analytics")
 async def get_vendor_analytics(
-    current_user: dict = Depends(require_role(["vendor"])),
+    current_user: dict = Depends(require_role(['vendor', 'admin'])),
     db=Depends(get_db)
 ):
     uid = current_user["_id"]
@@ -139,7 +139,7 @@ async def get_vendor_analytics(
 @router.get("/me/analytics/chart")
 async def get_vendor_analytics_chart(
     period: str = "week",
-    current_user: dict = Depends(require_role(["vendor"])),
+    current_user: dict = Depends(require_role(['vendor', 'admin'])),
     db=Depends(get_db)
 ):
     uid = current_user["_id"]
@@ -187,7 +187,7 @@ async def get_vendor_analytics_chart(
     return chart_data
 
 @router.get("/me/profile", response_model=VendorProfileResponse)
-async def get_my_vendor_profile(current_user: dict = Depends(require_role(["vendor"]))):
+async def get_my_vendor_profile(current_user: dict = Depends(require_role(['vendor', 'admin']))):
     profile = await db.vendor_profiles.find_one({"user_id": ObjectId(current_user["_id"])})
     if not profile:
         raise HTTPException(status_code=404, detail="Vendor profile not found")
@@ -207,7 +207,7 @@ async def get_my_vendor_profile(current_user: dict = Depends(require_role(["vend
 @router.put("/me/profile", response_model=VendorProfileResponse)
 async def update_my_vendor_profile(
     profile_data: VendorProfileUpdate,
-    current_user: dict = Depends(require_role(["vendor"]))
+    current_user: dict = Depends(require_role(['vendor', 'admin']))
 ):
     profile = await db.vendor_profiles.find_one({"user_id": ObjectId(current_user["_id"])})
     if not profile:

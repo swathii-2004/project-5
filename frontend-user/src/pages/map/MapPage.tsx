@@ -3,6 +3,17 @@ import { useQuery } from '@tanstack/react-query'
 import { MapPin, Package, Star } from 'lucide-react'
 import { useGeolocation } from '../../hooks/useGeolocation'
 import api from '../../lib/axios'
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
+
+// Fix Leaflet's default icon path issues
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 const STOCK_BADGE: Record<string, { label: string; cls: string }> = {
   in_stock:     { label: 'In Stock',    cls: 'bg-green-100 text-green-700' },
@@ -24,13 +35,41 @@ export default function MapPage() {
     <div className="space-y-6 max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold text-gray-900">Nearby Stores</h1>
 
-      {/* Map placeholder */}
-      <div className="h-64 bg-gray-100 rounded-2xl border border-gray-200 flex flex-col items-center justify-center gap-3 text-center">
-        <MapPin className="h-12 w-12 text-gray-300" />
-        <p className="font-semibold text-gray-500 text-lg">Interactive Map</p>
-        <p className="text-sm text-gray-400 max-w-xs">
-          Map view will be available once location services are configured
-        </p>
+      {/* Map view */}
+      <div className="h-64 md:h-80 bg-gray-100 rounded-2xl border border-gray-200 overflow-hidden relative z-0">
+        {(lat != null && lng != null) ? (
+          <MapContainer center={[lat, lng]} zoom={13} scrollWheelZoom={false} className="w-full h-full">
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            {/* User Location */}
+            <Marker position={[lat, lng]}>
+              <Popup>You are here</Popup>
+            </Marker>
+            {/* Stores */}
+            {stores?.map((store: any) => (
+              store.lat && store.lng && (
+                <Marker key={store.store_id} position={[store.lat, store.lng]}>
+                  <Popup>
+                    <div className="text-center font-sans">
+                      <p className="font-bold mb-1">{store.store_name}</p>
+                      <button onClick={() => navigate(`/stores/${store.store_id}`)} className="text-xs bg-blue-600 text-white px-3 py-1 rounded-lg">View</button>
+                    </div>
+                  </Popup>
+                </Marker>
+              )
+            ))}
+          </MapContainer>
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center gap-3 text-center bg-gray-50">
+            <MapPin className="h-12 w-12 text-gray-300" />
+            <p className="font-semibold text-gray-500 text-lg">Interactive Map</p>
+            <p className="text-sm text-gray-400 max-w-xs">
+              Map view will be available once location services are configured
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Location status */}
@@ -76,7 +115,7 @@ export default function MapPage() {
                     <h3 className="font-bold text-gray-900">{store.store_name}</h3>
                     <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
                       <MapPin className="h-3 w-3" />
-                      {store.city}{store.state ? `, ${store.state}` : ''} · {store.distance_km} km away
+                      {store.city}{store.state ? `, ${store.state}` : ''} · {store.distance_km.toFixed(1)} km away
                     </p>
                   </div>
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${badge.cls}`}>

@@ -29,7 +29,7 @@ export function useChat(reservationId: string, enabled: boolean): UseChatReturn 
     const token = useAuthStore.getState().token
     if (!token || !enabled) return
 
-    const wsUrl = `ws://localhost:8000/api/v1/chat/ws/chat/${reservationId}?token=${token}`
+    const wsUrl = `${import.meta.env.VITE_WS_URL}/api/v1/ws/chat/${reservationId}?token=${token}`
     ws.current = new WebSocket(wsUrl)
 
     ws.current.onopen = () => {

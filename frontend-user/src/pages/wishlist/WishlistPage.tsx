@@ -10,7 +10,7 @@ export default function WishlistPage() {
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ['wishlist'],
-    queryFn: () => api.get('/wishlist/').then(r => r.data),
+    queryFn: () => api.get('/wishlist').then(r => r.data),
   })
 
   const removeMutation = useMutation({

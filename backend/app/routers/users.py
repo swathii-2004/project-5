@@ -25,7 +25,7 @@ async def get_me(current_user: dict = Depends(get_current_user), db=Depends(get_
 
 @router.get("/me/dashboard")
 async def get_user_dashboard(
-    current_user: dict = Depends(require_role(["user"])),
+    current_user: dict = Depends(require_role(['user', 'admin', 'vendor'])),
     db=Depends(get_db)
 ):
     uid = current_user["_id"]

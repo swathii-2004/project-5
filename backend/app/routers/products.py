@@ -35,7 +35,7 @@ async def create_product(
     low_stock_threshold: int = Form(5),
     tags_json: str = Form("[]"),
     images: List[UploadFile] = File(default=[]),
-    current_user: dict = Depends(require_role(["vendor"]))
+    current_user: dict = Depends(require_role(['vendor', 'admin']))
 ):
     print(f"DEBUG: Starting product creation for user {current_user['_id']}")
     print(f"DEBUG: Data - name: {name}, category: {category}, price: {price}, stock: {stock}")
@@ -106,7 +106,7 @@ async def get_my_products(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
     category: Optional[str] = None,
-    current_user: dict = Depends(require_role(["vendor"]))
+    current_user: dict = Depends(require_role(['vendor', 'admin']))
 ):
     query = {"vendor_id": ObjectId(current_user["_id"]), "is_active": True}
     if category:
@@ -134,7 +134,7 @@ async def update_product(
     low_stock_threshold: Optional[int] = Form(None),
     tags_json: Optional[str] = Form(None),
     images: List[UploadFile] = File(default=[]),
-    current_user: dict = Depends(require_role(["vendor"]))
+    current_user: dict = Depends(require_role(['vendor', 'admin']))
 ):
     product = await db.products.find_one({"_id": ObjectId(product_id)})
     if not product:
@@ -168,7 +168,7 @@ async def update_product(
 async def update_product_stock(
     product_id: str,
     data: StockUpdateRequest,
-    current_user: dict = Depends(require_role(["vendor"]))
+    current_user: dict = Depends(require_role(['vendor', 'admin']))
 ):
     product = await db.products.find_one({"_id": ObjectId(product_id)})
     if not product:
@@ -208,7 +208,7 @@ async def update_product_stock(
 @router.delete("/{product_id}")
 async def delete_product(
     product_id: str,
-    current_user: dict = Depends(require_role(["vendor"]))
+    current_user: dict = Depends(require_role(['vendor', 'admin']))
 ):
     product = await db.products.find_one({"_id": ObjectId(product_id)})
     if not product:
@@ -375,7 +375,7 @@ async def emergency_search(
 async def recommended_products(
     lat: Optional[float] = None,
     lng: Optional[float] = None,
-    current_user: dict = Depends(require_role(["user"]))
+    current_user: dict = Depends(require_role(['user', 'admin', 'vendor']))
 ):
     past_reservations = await db.reservations.find(
         {"user_id": ObjectId(current_user["_id"]), "status": "completed"}

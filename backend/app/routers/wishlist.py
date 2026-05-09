@@ -11,7 +11,7 @@ router = APIRouter()
 @router.post("/", status_code=201)
 async def add_to_wishlist(
     data: WishlistAddRequest,
-    current_user: dict = Depends(require_role(["user", "admin", "vendor"]))
+    current_user: dict = Depends(require_role(['user', 'admin', 'vendor']))
 ):
     product = await db.products.find_one({"_id": ObjectId(data.product_id)})
     if not product:
@@ -39,7 +39,7 @@ async def add_to_wishlist(
 @router.delete("/{product_id}")
 async def remove_from_wishlist(
     product_id: str,
-    current_user: dict = Depends(require_role(["user", "admin", "vendor"]))
+    current_user: dict = Depends(require_role(['user', 'admin', 'vendor']))
 ):
     await db.wishlists.delete_one({
         "user_id": ObjectId(current_user["_id"]),
@@ -48,7 +48,7 @@ async def remove_from_wishlist(
     return {"message": "Removed from wishlist"}
 
 @router.get("/")
-async def get_my_wishlist(current_user: dict = Depends(require_role(["user", "admin", "vendor"]))):
+async def get_my_wishlist(current_user: dict = Depends(require_role(['user', 'admin', 'vendor']))):
     cursor = db.wishlists.find({"user_id": ObjectId(current_user["_id"])})
     wishlists = await cursor.to_list(length=None)
     
