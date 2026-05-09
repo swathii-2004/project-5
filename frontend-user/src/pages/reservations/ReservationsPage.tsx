@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { CheckCircle, Clock, XCircle, MapPin, MessageSquare, ChevronRight, AlertCircle } from 'lucide-react'
+import { CheckCircle, Clock, XCircle, MapPin, MessageSquare, ChevronRight, AlertCircle, ShoppingBag } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatDistanceToNow } from 'date-fns'
 import { useNavigate } from 'react-router-dom'

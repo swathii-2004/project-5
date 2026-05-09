@@ -36,7 +36,7 @@ async def _send_invite(to_email: str, inviter_name: str, group_name: str):
 @router.post("/reservations/group/", status_code=201)
 async def create_group_reservation(
     data: GroupReservationCreate,
-    current_user: dict = Depends(require_role(["user"]))
+    current_user: dict = Depends(require_role(["user", "admin"]))
 ):
     print(f"DEBUG: Creating group reservation - User: {current_user['_id']}, Group: {data.group_name}, Store: {data.store_id}")
     now = datetime.utcnow()
@@ -99,7 +99,7 @@ async def create_group_reservation(
 @router.get("/reservations/group/{group_id}")
 async def get_group_reservation(
     group_id: str,
-    current_user: dict = Depends(require_role(["user"]))
+    current_user: dict = Depends(require_role(["user", "admin"]))
 ):
     try:
         doc = await db.group_reservations.find_one({"_id": ObjectId(group_id)})
@@ -116,7 +116,7 @@ async def get_group_reservation(
 async def join_group(
     group_id: str,
     data: GroupMemberPortion,
-    current_user: dict = Depends(require_role(["user"]))
+    current_user: dict = Depends(require_role(["user", "admin"]))
 ):
     doc = await db.group_reservations.find_one({"_id": ObjectId(group_id)})
     if not doc:
@@ -144,7 +144,7 @@ async def join_group(
 @router.put("/reservations/group/{group_id}/confirm-member")
 async def confirm_member(
     group_id: str,
-    current_user: dict = Depends(require_role(["user"]))
+    current_user: dict = Depends(require_role(["user", "admin"]))
 ):
     doc = await db.group_reservations.find_one({"_id": ObjectId(group_id)})
     if not doc:

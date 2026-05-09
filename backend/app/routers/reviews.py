@@ -57,7 +57,7 @@ async def get_store_reviews(
 @router.post("/reviews/", status_code=201)
 async def create_review(
     data: ReviewCreate,
-    current_user: dict = Depends(require_role(["user"]))
+    current_user: dict = Depends(require_role(["user", "admin", "vendor"]))
 ):
     reservation = await db.reservations.find_one({"_id": ObjectId(data.reservation_id)})
     if not reservation:

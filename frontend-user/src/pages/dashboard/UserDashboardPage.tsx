@@ -27,171 +27,208 @@ export default function UserDashboardPage() {
     queryFn: () => api.get('/users/me/dashboard').then(r => r.data)
   })
 
-  const quickLinks = [
-    { icon: Search, label: 'Search Products', to: '/search', color: 'bg-blue-50 text-blue-600' },
-    { icon: Heart, label: 'My Wishlist', to: '/wishlist', color: 'bg-red-50 text-red-500' },
-    { icon: MapPin, label: 'Nearby Stores', to: '/map', color: 'bg-green-50 text-green-600' },
-  ]
-
   if (isLoading) {
     return (
-      <div className="space-y-8 animate-pulse">
-        <div className="h-8 bg-gray-200 rounded w-48" />
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[1,2,3].map(i => <div key={i} className="h-20 bg-gray-200 rounded-2xl" />)}
+      <div className="max-w-6xl mx-auto space-y-8 animate-pulse p-4">
+        <div className="h-32 bg-gray-100 rounded-[2.5rem]" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="h-64 bg-gray-100 rounded-3xl" />
+          <div className="h-64 bg-gray-100 rounded-3xl" />
         </div>
-        <div className="h-48 bg-gray-200 rounded-2xl" />
       </div>
     )
   }
 
+  const stats = dashboard?.stats || { total_reservations: 0, completed_reservations: 0, active_wishlist_items: 0 }
+  const activeRes = dashboard?.active_reservations || []
+  const nearbyStores = dashboard?.nearby_stores_preview || []
+
   return (
-    <div className="space-y-8 pb-12">
-      {/* Welcome */}
-      <div className="flex justify-between items-end">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Hello, {user?.name?.split(' ')[0] ?? 'there'} 👋
-          </h1>
-          <p className="text-gray-500 mt-1 text-sm">
-            Discover products from stores near you.
-          </p>
-        </div>
-        <div className="text-right hidden sm:block">
-          <p className="text-xs font-bold text-gray-400 uppercase">Your Impact</p>
-          <p className="text-sm font-medium text-blue-600">{dashboard?.stats?.completed_reservations || 0} items saved</p>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatCard label="Total Bookings" value={dashboard?.stats?.total_reservations || 0} icon={ShoppingBag} color="bg-blue-50 text-blue-600" />
-        <StatCard label="Wishlist" value={dashboard?.stats?.active_wishlist_items || 0} icon={Heart} color="bg-red-50 text-red-500" />
-        <StatCard label="Nearby Stores" value={dashboard?.nearby_stores_preview?.length || 0} icon={MapPin} color="bg-green-50 text-green-600" />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Active Reservations */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-gray-900">Active Reservations</h2>
-            <Link to="/reservations" className="text-sm font-medium text-blue-600 hover:underline flex items-center">
-              View all <ChevronRight className="h-4 w-4" />
-            </Link>
+    <div className="max-w-6xl mx-auto space-y-10 pb-20">
+      {/* Hero Header */}
+      <div className="relative bg-white rounded-[2.5rem] p-8 md:p-12 overflow-hidden border border-gray-100 shadow-sm">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+          <div className="space-y-2">
+            <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">
+              Hello, <span className="text-blue-600">{user?.name?.split(' ')[0] || 'User'}</span> 👋
+            </h1>
+            <p className="text-gray-500 font-medium">
+              Ready to save some items today?
+            </p>
           </div>
-          <div className="space-y-3">
-            {dashboard?.active_reservations?.length > 0 ? (
-              dashboard.active_reservations.map((res: any) => (
-                <div key={res.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-50 shrink-0">
-                    {res.items[0]?.image_url ? (
-                      <img src={res.items[0].image_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-xl">📦</div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm text-gray-900 truncate">{res.items[0]?.name}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
-                        res.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
-                      }`}>
-                        {res.status}
-                      </span>
-                      {res.countdown_seconds > 0 && (
-                        <div className="flex items-center gap-1 text-[10px] text-gray-500">
-                          <Clock className="h-3 w-3" />
-                          {Math.floor(res.countdown_seconds / 60)}m left
-                        </div>
+          
+          <div className="flex gap-4 md:gap-8 overflow-x-auto pb-2 md:pb-0">
+            <div className="text-center px-4">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Bookings</p>
+              <p className="text-2xl font-black text-gray-900">{stats.total_reservations}</p>
+            </div>
+            <div className="w-px h-10 bg-gray-100 hidden md:block" />
+            <div className="text-center px-4">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Impact</p>
+              <p className="text-2xl font-black text-blue-600">{stats.completed_reservations}</p>
+            </div>
+            <div className="w-px h-10 bg-gray-100 hidden md:block" />
+            <div className="text-center px-4">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Wishlist</p>
+              <p className="text-2xl font-black text-red-500">{stats.active_wishlist_items}</p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Background Elements */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl -mr-32 -mt-32 opacity-50" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Content (Left) */}
+        <div className="lg:col-span-2 space-y-10">
+          {/* Active Reservations */}
+          <section className="space-y-5">
+            <div className="flex items-center justify-between px-2">
+              <h2 className="text-xl font-black text-gray-900 tracking-tight">Active Reservations</h2>
+              <Link to="/reservations" className="text-sm font-bold text-blue-600 hover:bg-blue-50 px-3 py-1.5 rounded-full transition flex items-center gap-1">
+                View All <ChevronRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              {activeRes.length > 0 ? (
+                activeRes.map((res: any) => (
+                  <button 
+                    key={res.id} 
+                    onClick={() => navigate('/reservations')}
+                    className="group bg-white p-5 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-5 text-left"
+                  >
+                    <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gray-50 shrink-0 border border-gray-50">
+                      {res.items[0]?.image_url ? (
+                        <img src={res.items[0].image_url} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-2xl">📦</div>
                       )}
                     </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-gray-900 truncate">{res.items[0]?.name}</p>
+                      <div className="flex items-center gap-3 mt-1.5">
+                        <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-black uppercase tracking-wider ${
+                          res.status === 'confirmed' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'
+                        }`}>
+                          {res.status}
+                        </span>
+                        {res.countdown_seconds > 0 && (
+                          <div className="flex items-center gap-1 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                            <Clock className="h-3 w-3" />
+                            {Math.floor(res.countdown_seconds / 60)}m left
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-gray-300 group-hover:text-blue-600 transition" />
+                  </button>
+                ))
+              ) : (
+                <div className="bg-gray-50 rounded-[2rem] p-10 text-center border-2 border-dashed border-gray-200">
+                  <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mx-auto mb-4">
+                    <ShoppingBag className="h-8 w-8 text-gray-200" />
                   </div>
-                  <button onClick={() => navigate('/reservations')} className="p-2 hover:bg-gray-50 rounded-full transition text-gray-400">
-                    <ChevronRight className="h-5 w-5" />
+                  <p className="text-gray-500 font-bold text-sm">No items reserved yet</p>
+                  <button 
+                    onClick={() => navigate('/search')}
+                    className="mt-4 px-6 py-2 bg-blue-600 text-white font-bold rounded-xl text-xs hover:bg-blue-700 transition shadow-lg"
+                  >
+                    Explore Stores
                   </button>
                 </div>
-              ))
-            ) : (
-              <div className="bg-blue-50/50 rounded-2xl p-8 text-center border border-dashed border-blue-200">
-                <ShoppingBag className="h-10 w-10 text-blue-200 mx-auto mb-2" />
-                <p className="text-sm text-blue-700 font-medium">No active reservations</p>
-                <button onClick={() => navigate('/search')} className="mt-2 text-xs text-blue-600 hover:underline">Browse products &rarr;</button>
-              </div>
-            )}
+              )}
+            </div>
+          </section>
+
+          {/* CTA Banner */}
+          <div className="bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-500 rounded-[2.5rem] p-8 md:p-10 text-white relative overflow-hidden shadow-xl shadow-blue-100">
+            <div className="relative z-10 max-w-sm space-y-4">
+              <h2 className="text-2xl md:text-3xl font-black leading-tight tracking-tight">Save items from landfill today!</h2>
+              <p className="text-blue-100 font-medium text-sm leading-relaxed">
+                Local vendors are listing items that might go to waste. Help the planet and save money.
+              </p>
+              <button
+                onClick={() => navigate('/search')}
+                className="px-8 py-3.5 bg-white text-blue-600 font-black rounded-2xl text-sm hover:shadow-xl transition transform hover:-translate-y-0.5 active:scale-95"
+              >
+                START BROWSING
+              </button>
+            </div>
+            
+            {/* Abstract Decorative Shapes */}
+            <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32" />
+            <div className="absolute bottom-0 right-0 w-48 h-48 bg-blue-400/20 rounded-full blur-2xl mr-10 mb-10" />
           </div>
         </div>
 
-        {/* Nearby Stores */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-gray-900">Recommended Stores</h2>
-            <Link to="/map" className="text-sm font-medium text-blue-600 hover:underline flex items-center">
-              Open map <ChevronRight className="h-4 w-4" />
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 gap-3">
-            {dashboard?.nearby_stores_preview?.length > 0 ? (
-              dashboard.nearby_stores_preview.map((store: any) => (
-                <div key={store.store_id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
-                      <MapPin className="h-5 w-5" />
+        {/* Sidebar Content (Right) */}
+        <div className="space-y-10">
+          {/* Nearby Stores */}
+          <section className="space-y-5">
+            <div className="flex items-center justify-between px-2">
+              <h2 className="text-xl font-black text-gray-900 tracking-tight">Top Stores</h2>
+              <Link to="/map" className="text-xs font-bold text-blue-600 uppercase tracking-widest hover:underline">
+                View Map
+              </Link>
+            </div>
+            
+            <div className="space-y-3">
+              {nearbyStores.length > 0 ? (
+                nearbyStores.map((store: any) => (
+                  <button 
+                    key={store.store_id} 
+                    onClick={() => navigate(`/stores/${store.store_id}`)}
+                    className="w-full bg-white p-4 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-between group"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300">
+                        <MapPin className="h-6 w-6" />
+                      </div>
+                      <div className="text-left">
+                        <p className="font-bold text-gray-900 text-sm truncate max-w-[120px]">{store.store_name}</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{store.city || 'Local'}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold text-sm text-gray-900">{store.store_name}</p>
-                      <p className="text-xs text-gray-500">{store.city || 'Local Store'}</p>
+                    <div className="p-2 bg-gray-50 rounded-xl group-hover:bg-blue-50 group-hover:text-blue-600 transition">
+                      <ChevronRight className="h-4 w-4" />
                     </div>
-                  </div>
-                  <button onClick={() => navigate(`/stores/${store.store_id}`)} className="px-4 py-1.5 bg-gray-50 text-gray-700 text-xs font-semibold rounded-lg hover:bg-gray-100 transition">
-                    View
                   </button>
+                ))
+              ) : (
+                <div className="bg-gray-50/50 rounded-3xl p-8 text-center border border-dashed border-gray-200">
+                  <MapPin className="h-8 w-8 text-gray-200 mx-auto mb-2" />
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Searching stores...</p>
                 </div>
-              ))
-            ) : (
-              <div className="bg-gray-50 rounded-2xl p-8 text-center border border-dashed border-gray-200">
-                <MapPin className="h-10 w-10 text-gray-200 mx-auto mb-2" />
-                <p className="text-sm text-gray-500 font-medium">Finding stores near you...</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+              )}
+            </div>
+          </section>
 
-      {/* Quick links & CTA banner */}
-      <div className="space-y-4 pt-4 border-t border-gray-100">
-        <h2 className="text-lg font-bold text-gray-900">Quick Actions</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {quickLinks.map(({ icon: Icon, label, to, color }) => (
-            <button
-              key={to}
-              onClick={() => navigate(to)}
-              className="flex items-center gap-4 p-5 bg-white border border-gray-200 rounded-2xl hover:shadow-md transition text-left"
-            >
-              <div className={`p-3 rounded-xl ${color}`}>
-                <Icon className="h-5 w-5" />
-              </div>
-              <span className="font-medium text-gray-800 text-sm">{label}</span>
-            </button>
-          ))}
+          {/* Categories Grid */}
+          <section className="space-y-5">
+            <h2 className="text-xl font-black text-gray-900 tracking-tight px-2">Quick Search</h2>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: 'Grocery', icon: ShoppingBag, color: 'text-green-600 bg-green-50' },
+                { label: 'Electronics', icon: Search, color: 'text-blue-600 bg-blue-50' },
+                { label: 'Favorites', icon: Heart, color: 'text-red-500 bg-red-50' },
+                { label: 'Near Me', icon: MapPin, color: 'text-indigo-600 bg-indigo-50' },
+              ].map((cat, i) => (
+                <button 
+                  key={i}
+                  onClick={() => navigate('/search')}
+                  className="flex flex-col items-center justify-center p-4 bg-white border border-gray-100 rounded-3xl hover:border-blue-200 hover:shadow-sm transition-all group"
+                >
+                  <div className={`p-3 rounded-2xl mb-2 group-hover:scale-110 transition-transform ${cat.color}`}>
+                    <cat.icon className="h-5 w-5" />
+                  </div>
+                  <span className="text-xs font-bold text-gray-700">{cat.label}</span>
+                </button>
+              ))}
+            </div>
+          </section>
         </div>
-      </div>
-
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-8 text-white relative overflow-hidden shadow-xl">
-        <div className="relative z-10 max-w-sm">
-          <h2 className="text-2xl font-bold leading-tight">Save items from landfill today!</h2>
-          <p className="text-blue-100 text-sm mt-2">
-            Local vendors are listing items that might go to waste. Help the planet and save money.
-          </p>
-          <button
-            onClick={() => navigate('/search')}
-            className="mt-6 px-6 py-3 bg-white text-blue-600 font-bold rounded-xl text-sm hover:bg-blue-50 transition shadow-lg"
-          >
-            Start Browsing
-          </button>
-        </div>
-        {/* Abstract shapes for premium look */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-32 h-32 bg-blue-400/20 rounded-full mr-10 mb-10 blur-2xl" />
       </div>
     </div>
   )

@@ -37,7 +37,7 @@ def _format(r: dict) -> dict:
 @router.post("/reservations/", status_code=201, response_model=ReservationResponse)
 async def make_reservation(
     data: ReservationCreate,
-    current_user: dict = Depends(require_role(["user"]))
+    current_user: dict = Depends(require_role(["user", "admin", "vendor"]))
 ):
     doc = await create_reservation(data, str(current_user["_id"]), db)
     return _format(doc)
@@ -48,7 +48,7 @@ async def list_user_reservations(
     status: Optional[str] = None,
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
-    current_user: dict = Depends(require_role(["user"]))
+    current_user: dict = Depends(require_role(["user", "admin", "vendor"]))
 ):
     query = {"user_id": ObjectId(current_user["_id"])}
     if status:
@@ -119,7 +119,7 @@ async def complete(
 @router.put("/reservations/{reservation_id}/cancel", response_model=ReservationResponse)
 async def cancel(
     reservation_id: str,
-    current_user: dict = Depends(require_role(["user"]))
+    current_user: dict = Depends(require_role(["user", "admin", "vendor"]))
 ):
     doc = await cancel_reservation(reservation_id, current_user["_id"], db)
     return _format(doc)
