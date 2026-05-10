@@ -17,7 +17,14 @@ def init_firebase():
         logger.warning("FIREBASE_CREDENTIALS_JSON not set. Push notifications disabled.")
         return
     try:
-        cred = credentials.Certificate(settings.FIREBASE_CREDENTIALS_JSON)
+        import json
+        cred_source = settings.FIREBASE_CREDENTIALS_JSON
+        if cred_source.strip().startswith("{"):
+            cred_dict = json.loads(cred_source)
+            cred = credentials.Certificate(cred_dict)
+        else:
+            cred = credentials.Certificate(cred_source)
+            
         firebase_admin.initialize_app(cred)
         _firebase_initialized = True
         logger.info("Firebase initialized successfully.")
