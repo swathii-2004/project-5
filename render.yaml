@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: proximart-backend
+    env: python
+    region: oregon # or frankfurt, ohio, singapore depending on your preference
+    buildCommand: "cd backend && pip install -r requirements.txt"
+    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: MONGODB_URL
+        sync: false
+      - key: MONGO_TEST_DB
+        value: proximart_test
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: AES_SECRET_KEY
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: SENDGRID_FROM_EMAIL
+        sync: false
+      - key: FRONTEND_USER_URL
+        sync: false
+      - key: FRONTEND_VENDOR_URL
+        sync: false
+      - key: FRONTEND_ADMIN_URL
+        sync: false
+      # For Firebase credentials, Render allows setting secret files or parsing a base64 env var. 
+      # If using a secret file in Render dashboard, the path to it should be set here:
+      - key: FIREBASE_CREDENTIALS_JSON
+        value: "/etc/secrets/firebase_credentials.json"

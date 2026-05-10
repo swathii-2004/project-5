@@ -19,31 +19,37 @@ async def websocket_chat(
 ):
     try:
         payload = decode_token(token)
-    except Exception:
+    except Exception as e:
+        logger.warning(f"[WS Chat] Token decode failed for reservation {reservation_id}: {e}")
         await websocket.close(code=1008)
         return
         
     user_id = payload.get("user_id")
     if not user_id:
+        logger.warning(f"[WS Chat] No user_id in token for reservation {reservation_id}")
         await websocket.close(code=1008)
         return
 
     try:
         reservation = await db.reservations.find_one({"_id": ObjectId(reservation_id)})
-    except Exception:
+    except Exception as e:
+        logger.warning(f"[WS Chat] Invalid reservation_id {reservation_id}: {e}")
         await websocket.close(code=1008)
         return
 
     if not reservation:
+        logger.warning(f"[WS Chat] Reservation {reservation_id} not found")
         await websocket.close(code=1008)
         return
         
     is_participant = (str(reservation["user_id"]) == user_id or str(reservation["vendor_id"]) == user_id)
     if not is_participant:
+        logger.warning(f"[WS Chat] User {user_id} is not a participant in reservation {reservation_id}")
         await websocket.close(code=1008)
         return
         
     if reservation["status"] not in ["pending", "confirmed", "completed"]:
+        logger.warning(f"[WS Chat] Reservation {reservation_id} has invalid status '{reservation['status']}' for chat")
         await websocket.close(code=1008)
         return
 
@@ -52,9 +58,13 @@ async def websocket_chat(
     else:
         receiver_id = str(reservation["user_id"])
 
-    await manager.connect(websocket, reservation_id)
+    # Persistent room ID: sorted pair of IDs
+    room_id = "_".join(sorted([user_id, receiver_id]))
 
-    messages_cursor = db.chat_messages.find({"room_id": reservation_id}).sort("created_at", 1).limit(50)
+    logger.info(f"[WS Chat] User {user_id} connected to room {room_id} (via reservation {reservation_id})")
+    await manager.connect(websocket, room_id)
+
+    messages_cursor = db.chat_messages.find({"room_id": room_id}).sort("created_at", 1).limit(50)
     messages = await messages_cursor.to_list(50)
     
     history = []
@@ -66,6 +76,7 @@ async def websocket_chat(
         del msg["_id"]
         history.append(msg)
         
+    logger.info(f"[WS Chat] Sending {len(history)} history messages to user {user_id}")
     await websocket.send_json({"type": "history", "messages": history})
 
     try:
@@ -77,7 +88,7 @@ async def websocket_chat(
                 
             now = datetime.utcnow()
             msg_doc = {
-                "room_id": reservation_id,
+                "room_id": room_id,
                 "sender_id": ObjectId(user_id),
                 "receiver_id": ObjectId(receiver_id),
                 "message": text,
@@ -85,6 +96,7 @@ async def websocket_chat(
                 "created_at": now
             }
             result = await db.chat_messages.insert_one(msg_doc)
+            logger.info(f"[WS Chat] Message from {user_id} in room {room_id}: '{text[:50]}'")
             
             broadcast_msg = {
                 "type": "message",
@@ -94,13 +106,14 @@ async def websocket_chat(
                 "message": text,
                 "created_at": now.isoformat()
             }
-            await manager.broadcast(reservation_id, broadcast_msg)
+            await manager.broadcast(room_id, broadcast_msg)
             
     except WebSocketDisconnect:
-        manager.disconnect(websocket, reservation_id)
+        logger.info(f"[WS Chat] User {user_id} disconnected from room {room_id}")
+        manager.disconnect(websocket, room_id)
     except Exception as e:
-        logger.error(f"WebSocket error: {e}")
-        manager.disconnect(websocket, reservation_id)
+        logger.error(f"[WS Chat] Error for user {user_id} in room {room_id}: {e}")
+        manager.disconnect(websocket, room_id)
 
 @router.get("/{reservation_id}/history")
 async def get_chat_history(
@@ -122,7 +135,10 @@ async def get_chat_history(
     if str(reservation["user_id"]) != user_id and str(reservation["vendor_id"]) != user_id:
         raise HTTPException(status_code=403, detail="Not a participant in this reservation")
 
-    query = {"room_id": reservation_id}
+    other_id = str(reservation["vendor_id"]) if user_id == str(reservation["user_id"]) else str(reservation["user_id"])
+    room_id = "_".join(sorted([user_id, other_id]))
+
+    query = {"room_id": room_id}
     total = await db.chat_messages.count_documents(query)
     
     cursor = db.chat_messages.find(query).sort("created_at", 1).skip((page-1)*limit).limit(limit)
@@ -138,7 +154,7 @@ async def get_chat_history(
         messages.append(d)
         
     await db.chat_messages.update_many(
-        {"room_id": reservation_id, "receiver_id": ObjectId(user_id), "is_read": False},
+        {"room_id": room_id, "receiver_id": ObjectId(user_id), "is_read": False},
         {"$set": {"is_read": True}}
     )
 

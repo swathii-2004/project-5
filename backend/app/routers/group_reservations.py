@@ -87,10 +87,7 @@ async def create_group_reservation(
         for email in data.invite_emails:
             await _send_invite(email, current_user.get("name", "A user"), data.group_name)
 
-        doc["id"] = str(doc["_id"])
-        doc["created_by"] = str(doc["created_by"])
-        doc["store_id"] = str(doc["store_id"])
-        return doc
+        return _format_group(doc)
     except Exception as e:
         print(f"DEBUG: Error inserting group reservation: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
@@ -107,9 +104,7 @@ async def get_group_reservation(
         raise HTTPException(status_code=400, detail="Invalid group ID")
     if not doc:
         raise HTTPException(status_code=404, detail="Group reservation not found")
-    doc["id"] = str(doc["_id"])
-    doc["created_by"] = str(doc["created_by"])
-    return doc
+    return _format_group(doc)
 
 
 @router.put("/reservations/group/{group_id}/join")
@@ -137,8 +132,7 @@ async def join_group(
         }}, "$set": {"updated_at": datetime.utcnow()}}
     )
     updated = await db.group_reservations.find_one({"_id": ObjectId(group_id)})
-    updated["id"] = str(updated["_id"])
-    return updated
+    return _format_group(updated)
 
 
 @router.put("/reservations/group/{group_id}/confirm-member")
@@ -167,5 +161,17 @@ async def confirm_member(
         {"_id": ObjectId(group_id)}, {"$set": update}
     )
     updated = await db.group_reservations.find_one({"_id": ObjectId(group_id)})
-    updated["id"] = str(updated["_id"])
-    return updated
+    return _format_group(updated)
+
+def _format_group(doc: dict) -> dict:
+    doc["id"] = str(doc["_id"])
+    doc.pop("_id", None)
+    doc["created_by"] = str(doc["created_by"])
+    if doc.get("store_id"):
+        doc["store_id"] = str(doc["store_id"])
+    for m in doc.get("members", []):
+        m["user_id"] = str(m["user_id"])
+    for i in doc.get("items", []):
+        if "product_id" in i:
+            i["product_id"] = str(i["product_id"])
+    return doc

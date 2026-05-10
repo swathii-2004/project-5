@@ -36,7 +36,7 @@ class ReservationItemSchema(BaseModel):
 
 
 class ReservationResponse(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="ignore")
     id: str
     user_id: str
     vendor_id: str
@@ -51,6 +51,11 @@ class ReservationResponse(BaseModel):
     is_group: bool
     countdown_seconds: Optional[float] = None
     created_at: datetime
+    updated_at: Optional[datetime] = None
+    group_id: Optional[str] = None
+    pickup_contact_phone: Optional[str] = None
+    user_name: Optional[str] = None
+    vendor_name: Optional[str] = None
 
 
 class RejectReservationRequest(BaseModel):

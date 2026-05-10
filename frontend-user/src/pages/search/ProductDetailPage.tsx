@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { MapPin, Heart, Star, Minus, Plus, ShoppingBag, Users, X } from 'lucide-react'
@@ -125,14 +125,20 @@ export default function ProductDetailPage() {
   const { data: product, isLoading, isError } = useQuery({
     queryKey: ['product', id],
     queryFn: () => api.get(`/products/${id}`).then(r => r.data),
-    onSuccess: (p: any) => {
-      if (user) {
-        api.get('/wishlist/').then(r => {
-          setWishlisted(r.data.some((w: any) => w.product?.id === p.id))
-        }).catch(() => {})
-      }
-    }
   })
+
+  const { data: wishlistData } = useQuery({
+    queryKey: ['wishlist'],
+    queryFn: () => api.get('/wishlist/').then(r => r.data),
+    enabled: !!user && !!product,
+  })
+
+  // Update wishlisted state when wishlistData or product changes
+  useEffect(() => {
+    if (wishlistData && product) {
+      setWishlisted(wishlistData.some((w: any) => w.product?.id === product.id))
+    }
+  }, [wishlistData, product])
 
   const { data: reviewsData } = useQuery({
     queryKey: ['reviews-product', id],

@@ -22,8 +22,20 @@ api.interceptors.response.use(
       originalRequest._retry = true
       try {
         const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/refresh`, {}, { withCredentials: true })
-        const { access_token, user } = response.data
-        useAuthStore.getState().setAuth(user, access_token)
+        const { access_token } = response.data
+        const existingUser = useAuthStore.getState().user
+
+        // Parse JWT to verify it belongs to the same user
+        try {
+          const payload = JSON.parse(atob(access_token.split('.')[1]))
+          if (existingUser && payload.user_id !== existingUser.id) {
+            throw new Error("Session mismatch across tabs")
+          }
+        } catch (e) {
+          throw new Error("Invalid token or session mismatch")
+        }
+
+        useAuthStore.getState().setAuth(existingUser, access_token)
         originalRequest.headers.Authorization = `Bearer ${access_token}`
         return api(originalRequest)
       } catch (refreshError) {

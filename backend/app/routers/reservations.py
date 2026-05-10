@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional
 from datetime import datetime
@@ -14,18 +15,23 @@ from app.services.reservation_service import (
 )
 from app.utils.encryption import decrypt
 
+logger = logging.getLogger(__name__)
 router = APIRouter(tags=["reservations"])
 
 
 def _format(r: dict) -> dict:
     now = datetime.utcnow()
     r["id"] = str(r["_id"])
+    r.pop("_id", None)
     r["user_id"] = str(r["user_id"])
     r["vendor_id"] = str(r["vendor_id"])
     if r.get("store_id"):
         r["store_id"] = str(r["store_id"])
+    if r.get("group_id"):
+        r["group_id"] = str(r["group_id"])
     for item in r.get("items", []):
-        item["product_id"] = str(item["product_id"])
+        if "product_id" in item:
+            item["product_id"] = str(item["product_id"])
     if r["status"] in ("pending", "confirmed"):
         secs = (r["expires_at"] - now).total_seconds()
         r["countdown_seconds"] = max(0.0, secs)
@@ -39,7 +45,10 @@ async def make_reservation(
     data: ReservationCreate,
     current_user: dict = Depends(require_role(['user', 'admin', 'vendor']))
 ):
-    doc = await create_reservation(data, str(current_user["_id"]), db)
+    user_id = str(current_user["_id"])
+    logger.info(f"User {user_id} making reservation for product {data.product_id}")
+    doc = await create_reservation(data, user_id, db)
+    logger.info(f"Reservation {doc['_id']} created for user {user_id}")
     return _format(doc)
 
 
@@ -93,7 +102,10 @@ async def confirm(
     data: ConfirmReservationRequest,
     current_user: dict = Depends(require_role(['vendor', 'admin']))
 ):
-    doc = await confirm_reservation(reservation_id, current_user["_id"], data.note, db)
+    vendor_id = str(current_user["_id"])
+    logger.info(f"Vendor {vendor_id} confirming reservation {reservation_id}")
+    doc = await confirm_reservation(reservation_id, vendor_id, data.note, db)
+    logger.info(f"Reservation {reservation_id} confirmed by vendor {vendor_id}")
     return _format(doc)
 
 
@@ -103,7 +115,10 @@ async def reject(
     data: RejectReservationRequest,
     current_user: dict = Depends(require_role(['vendor', 'admin']))
 ):
-    doc = await reject_reservation(reservation_id, current_user["_id"], data.reason, db)
+    vendor_id = str(current_user["_id"])
+    logger.info(f"Vendor {vendor_id} rejecting reservation {reservation_id}. Reason: {data.reason}")
+    doc = await reject_reservation(reservation_id, vendor_id, data.reason, db)
+    logger.info(f"Reservation {reservation_id} rejected by vendor {vendor_id}")
     return _format(doc)
 
 
@@ -112,7 +127,10 @@ async def complete(
     reservation_id: str,
     current_user: dict = Depends(require_role(['vendor', 'admin']))
 ):
-    doc = await complete_reservation(reservation_id, current_user["_id"], db)
+    vendor_id = str(current_user["_id"])
+    logger.info(f"Vendor {vendor_id} completing reservation {reservation_id}")
+    doc = await complete_reservation(reservation_id, vendor_id, db)
+    logger.info(f"Reservation {reservation_id} completed by vendor {vendor_id}")
     return _format(doc)
 
 
@@ -121,5 +139,8 @@ async def cancel(
     reservation_id: str,
     current_user: dict = Depends(require_role(['user', 'admin', 'vendor']))
 ):
-    doc = await cancel_reservation(reservation_id, current_user["_id"], db)
+    user_id = str(current_user["_id"])
+    logger.info(f"User {user_id} cancelling reservation {reservation_id}")
+    doc = await cancel_reservation(reservation_id, user_id, db)
+    logger.info(f"Reservation {reservation_id} cancelled by user {user_id}")
     return _format(doc)

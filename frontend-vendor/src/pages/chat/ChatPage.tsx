@@ -99,9 +99,23 @@ export default function ChatPage() {
 
   const reservations = data?.reservations?.filter((r: any) => ["pending", "confirmed"].includes(r.status)) || []
 
+  // Group by user_id
+  const groupedReservations = reservations.reduce((acc: any, res: any) => {
+    if (!acc[res.user_id]) {
+      acc[res.user_id] = res
+    } else if (new Date(res.created_at) > new Date(acc[res.user_id].created_at)) {
+      acc[res.user_id] = res
+    }
+    return acc
+  }, {})
+
+  const chatList = Object.values(groupedReservations)
+  const activeRes = chatList.find((r: any) => r.user_id === selectedId) || chatList[0]
+  const activeId = activeRes?.id
+
   if (isLoading) return <div className="p-8 text-center animate-pulse">Loading chats...</div>
 
-  if (reservations.length === 0) {
+  if (chatList.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] text-center px-4">
         <div className="p-6 bg-indigo-50 rounded-3xl mb-4">
@@ -115,8 +129,6 @@ export default function ChatPage() {
     )
   }
 
-  const activeId = selectedId || reservations[0]?.id
-
   return (
     <div className="max-w-5xl mx-auto bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm flex md:flex-row flex-col h-[calc(100vh-6rem)] md:h-[600px]">
       {/* Sidebar */}
@@ -125,16 +137,16 @@ export default function ChatPage() {
           <h2 className="font-bold text-gray-900">Messages</h2>
         </div>
         <div className="flex-1 overflow-y-auto">
-          {reservations.map((res: any) => (
+          {chatList.map((res: any) => (
             <button
-              key={res.id}
-              onClick={() => setSelectedId(res.id)}
+              key={res.user_id}
+              onClick={() => setSelectedId(res.user_id)}
               className={`w-full text-left p-4 border-b border-gray-100 transition hover:bg-gray-50 ${
-                activeId === res.id ? "bg-blue-50/50" : ""
+                activeRes?.user_id === res.user_id ? "bg-blue-50/50" : ""
               }`}
             >
               <div className="font-semibold text-sm text-gray-900 truncate">
-                Customer
+                {res.user_name || "Unknown Customer"}
               </div>
               <div className="text-xs text-gray-500 mt-1 truncate">{res.items[0]?.name}</div>
             </button>
@@ -143,13 +155,13 @@ export default function ChatPage() {
       </div>
 
       {/* Main Chat */}
-      <div className={`flex-1 flex-col ${!selectedId && reservations.length > 0 ? "hidden md:flex" : "flex"}`}>
+      <div className={`flex-1 flex-col ${!selectedId && chatList.length > 0 ? "hidden md:flex" : "flex"}`}>
         <div className="p-4 border-b border-gray-200 bg-white flex items-center gap-3">
           <button className="md:hidden p-1 -ml-1 text-gray-500" onClick={() => setSelectedId(null)}>
             ←
           </button>
           <div className="font-bold text-gray-900">
-            {reservations.find((r: any) => r.id === activeId)?.items[0]?.name}
+            {activeRes?.user_name || "Unknown Customer"}
           </div>
         </div>
         {activeId && user?.id && <ChatView reservationId={activeId} currentUserId={user.id} />}

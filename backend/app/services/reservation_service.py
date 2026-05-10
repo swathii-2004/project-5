@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 from bson import ObjectId
 from fastapi import HTTPException
@@ -5,12 +6,16 @@ from app.utils.encryption import encrypt
 from app.models.reservation import ReservationCreate
 from app.services.notification_service import notify_user
 
+logger = logging.getLogger(__name__)
 
 async def release_stock(reservation_id: str, db) -> None:
+    logger.info(f"Releasing stock for reservation {reservation_id}")
     reservation = await db.reservations.find_one({"_id": ObjectId(reservation_id)})
     if not reservation:
+        logger.warning(f"Could not find reservation {reservation_id} to release stock")
         return
     for item in reservation.get("items", []):
+        logger.info(f"Releasing {item['quantity']} of product {item['product_id']}")
         await db.products.update_one(
             {"_id": item["product_id"]},
             {"$inc": {"reserved_qty": -item["quantity"]}}
@@ -20,13 +25,14 @@ async def release_stock(reservation_id: str, db) -> None:
 async def create_reservation(data: ReservationCreate, user_id: str, db) -> dict:
     product = await db.products.find_one({"_id": ObjectId(data.product_id)})
     if not product:
+        logger.error(f"Product {data.product_id} not found during reservation creation")
         raise HTTPException(status_code=404, detail="Product not found")
 
     available_qty = product["stock"] - product.get("reserved_qty", 0)
-    print(f"DEBUG: Reservation attempt - Product: {product['name']}, Stock: {product['stock']}, Reserved: {product.get('reserved_qty', 0)}, Available: {available_qty}, Requested: {data.quantity}")
+    logger.info(f"Reservation attempt - Product: {product['name']} ({data.product_id}), Available: {available_qty}, Requested: {data.quantity}")
     
     if available_qty < data.quantity:
-        print(f"DEBUG: Insufficient stock - Available: {available_qty}, Requested: {data.quantity}")
+        logger.warning(f"Insufficient stock for product {data.product_id}: requested {data.quantity}, available {available_qty}")
         raise HTTPException(
             status_code=400,
             detail=f"Insufficient stock. Only {available_qty} available."
@@ -37,9 +43,17 @@ async def create_reservation(data: ReservationCreate, user_id: str, db) -> dict:
     now = datetime.utcnow()
     expires_at = now + timedelta(minutes=30)
 
+    user_doc = await db.users.find_one({"_id": ObjectId(user_id)})
+    vendor_doc = await db.users.find_one({"_id": ObjectId(product["vendor_id"])})
+    
+    user_name = user_doc.get("name", "Unknown User") if user_doc else "Unknown User"
+    vendor_name = vendor_doc.get("name", "Unknown Vendor") if vendor_doc else "Unknown Vendor"
+
     reservation_doc = {
         "user_id": ObjectId(user_id),
         "vendor_id": product["vendor_id"],
+        "user_name": user_name,
+        "vendor_name": vendor_name,
         "store_id": ObjectId(data.store_id) if data.store_id else None,
         "items": [{
             "product_id": product["_id"],
@@ -62,11 +76,13 @@ async def create_reservation(data: ReservationCreate, user_id: str, db) -> dict:
     }
 
     result = await db.reservations.insert_one(reservation_doc)
+    logger.info(f"Inserted reservation {result.inserted_id} into database")
 
     await db.products.update_one(
         {"_id": product["_id"]},
         {"$inc": {"reserved_qty": data.quantity}}
     )
+    logger.info(f"Incremented reserved_qty for product {data.product_id} by {data.quantity}")
 
     await notify_user(
         str(product["vendor_id"]),
